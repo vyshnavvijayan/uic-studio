@@ -304,19 +304,6 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#080809] to-transparent z-10 opacity-70" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#080809] via-[#080809]/80 to-transparent z-10" />
 
-        {/* TOP STATUS BAR: Status Badge */}
-        <div className="relative z-20 pt-24 px-6 sm:px-12 flex items-center justify-between pointer-events-none">
-          <div className="flex items-center gap-3 pointer-events-auto">
-            <span className="text-[10px] uppercase font-mono tracking-widest text-[#90909c] bg-[#161619]/80 backdrop-blur border border-white/10 px-3 py-1 rounded-full flex items-center gap-2">
-              <span
-                className="w-1.5 h-1.5 rounded-full inline-block animate-pulse"
-                style={{ backgroundColor: accentColor }}
-              />
-              <span>1080p Cinema Sequence</span>
-            </span>
-          </div>
-        </div>
-
         {/* CENTER CONTENT: Dynamic Editorial Headlines */}
         <div className="relative z-20 px-6 sm:px-12 max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
           {/* 1. Initial Opening Headline (Fades smoothly on scroll) */}
