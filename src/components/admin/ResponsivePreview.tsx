@@ -100,15 +100,15 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({ content })
       <div className="flex-1 bg-[#060608] overflow-y-auto p-4 flex justify-center items-start">
         <div
           key={previewKey}
-          className={`${getContainerWidth()} min-h-full transition-all duration-300 ${
+          className={`${getContainerWidth()} min-h-full transition-all duration-300 relative isolate [transform:translateZ(0)] overflow-hidden ${
             viewport !== "desktop"
-              ? "rounded-[32px] border-4 border-[#222228] shadow-[0_25px_60px_rgba(0,0,0,0.9)] overflow-hidden my-4"
-              : "w-full"
+              ? "rounded-[32px] border-4 border-[#222228] shadow-[0_25px_60px_rgba(0,0,0,0.9)] my-4"
+              : "w-full rounded-2xl border border-white/[0.06] shadow-xl"
           }`}
         >
           {/* Internal Scrollable Content */}
-          <div className="min-h-screen bg-[#080809] text-[#f5f5f7] relative">
-            <Header brand={content.brand} />
+          <div className="min-h-screen bg-[#080809] text-[#f5f5f7] relative isolate">
+            <Header brand={content.brand} isEmbeddedPreview={true} />
             <SectionRenderer content={content} />
             {content.sections.footer.enabled && (
               <Footer

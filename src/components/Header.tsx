@@ -8,32 +8,56 @@ import { Menu, X, ArrowUpRight } from "lucide-react";
 interface HeaderProps {
   brand: BrandSettings;
   onOpenInquiry?: () => void;
+  isEmbeddedPreview?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ brand, onOpenInquiry }) => {
+export const Header: React.FC<HeaderProps> = ({
+  brand,
+  onOpenInquiry,
+  isEmbeddedPreview = false,
+}) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (isEmbeddedPreview) return;
     const handleScroll = () => {
       setScrolled(window.scrollY > 40);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isEmbeddedPreview]);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (isEmbeddedPreview) {
+      e.preventDefault();
+      if (href.startsWith("#")) {
+        const id = href.replace("#", "");
+        const target = document.getElementById(id);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    }
+  };
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-[#080809]/85 backdrop-blur-md border-b border-white/[0.07] py-3.5"
-          : "bg-transparent py-5"
-      }`}
+      className={`${
+        isEmbeddedPreview
+          ? "sticky top-0 left-0 right-0 z-20 bg-[#080809]/90 backdrop-blur-md border-b border-white/[0.07] py-3.5"
+          : `fixed top-0 left-0 right-0 z-50 ${
+              scrolled
+                ? "bg-[#080809]/85 backdrop-blur-md border-b border-white/[0.07] py-3.5"
+                : "bg-transparent py-5"
+            }`
+      } transition-all duration-300`}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 flex items-center justify-between">
         {/* Brand Wordmark */}
         <Link
           href="#hero"
+          onClick={(e) => handleNavClick(e, "#hero")}
           className="group flex items-center gap-2 tracking-tighter font-semibold text-lg sm:text-xl text-[#f5f5f7] hover:text-white transition-colors"
         >
           <span className="font-mono text-xs tracking-widest text-[#90909c] group-hover:text-[#c6f36b] transition-colors">
@@ -52,6 +76,7 @@ export const Header: React.FC<HeaderProps> = ({ brand, onOpenInquiry }) => {
             <Link
               key={item.id}
               href={item.href}
+              onClick={(e) => handleNavClick(e, item.href)}
               className="hover:text-[#f5f5f7] transition-colors duration-200"
             >
               {item.label}
@@ -87,7 +112,10 @@ export const Header: React.FC<HeaderProps> = ({ brand, onOpenInquiry }) => {
             <Link
               key={item.id}
               href={item.href}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => {
+                setMobileMenuOpen(false);
+                handleNavClick(e, item.href);
+              }}
               className="text-sm uppercase tracking-widest text-[#90909c] hover:text-white py-2 border-b border-white/[0.04]"
             >
               {item.label}

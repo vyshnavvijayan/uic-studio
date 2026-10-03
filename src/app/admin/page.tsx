@@ -268,7 +268,7 @@ function AdminEditorContent() {
     <div className="min-h-screen bg-[#080809] text-[#f5f5f7] flex flex-col selection:bg-[#c6f36b] selection:text-[#080809]">
       {/* Top Banner if in Sandbox Mode */}
       {(isExplicitSandbox || !supabaseReady) && (
-        <div className="bg-amber-950/60 border-b border-amber-500/30 px-6 py-2 text-xs font-mono text-amber-300 flex items-center justify-between">
+        <div className="relative z-30 bg-amber-950/60 border-b border-amber-500/30 px-6 py-2 text-xs font-mono text-amber-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-amber-400 flex-shrink-0" />
             <span>
@@ -285,7 +285,7 @@ function AdminEditorContent() {
       )}
 
       {/* TOP CMS BAR */}
-      <header className="h-14 border-b border-white/[0.08] bg-[#0c0c0f] px-6 flex items-center justify-between flex-shrink-0">
+      <header className="sticky top-0 z-30 h-14 border-b border-white/[0.08] bg-[#0c0c0f] px-4 sm:px-6 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-6">
           <Link
             href="/"
