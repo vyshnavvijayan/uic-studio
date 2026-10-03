@@ -17,6 +17,11 @@ import {
   Wand2,
   Cpu,
   ArrowRight,
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Palette,
+  Grid,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -29,6 +34,7 @@ interface NfcShowcaseProps {
 type MaterialType = "obsidian" | "gold" | "titanium" | "carbon" | "emerald";
 type FoilType = "gold" | "silver" | "neon" | "holographic";
 type ChipType = "gold" | "silver" | "black";
+type PatternType = "none" | "carbon" | "circuit" | "honeycomb" | "hatch";
 
 interface MaterialConfig {
   id: MaterialType;
@@ -100,6 +106,17 @@ const MATERIALS: Record<MaterialType, MaterialConfig> = {
   },
 };
 
+const LUXURY_PALETTES = [
+  { name: "Obsidian Noir", primary: "#0a0a0d", secondary: "#16161f", accent: "#c6f36b" },
+  { name: "Sovereign Navy", primary: "#07111e", secondary: "#10233b", accent: "#38bdf8" },
+  { name: "Bordeaux Reserve", primary: "#1c070c", secondary: "#310d18", accent: "#fb7185" },
+  { name: "Imperial Emerald", primary: "#05160d", secondary: "#0c2c1a", accent: "#34d399" },
+  { name: "Midnight Amethyst", primary: "#130722", secondary: "#24103d", accent: "#c084fc" },
+  { name: "Royal Gold", primary: "#261a0a", secondary: "#3f2d12", accent: "#fbbf24" },
+  { name: "Gunmetal Shadow", primary: "#161820", secondary: "#262b38", accent: "#94a3b8" },
+  { name: "Arctic Quartz", primary: "#dbe0e6", secondary: "#f1f5f9", accent: "#0f172a" },
+];
+
 const FOIL_STYLES: Record<FoilType, { label: string; textClass: string; hex: string }> = {
   silver: {
     label: "Liquid Silver",
@@ -132,6 +149,7 @@ const PRESETS = [
     material: "titanium" as MaterialType,
     foil: "silver" as FoilType,
     chip: "silver" as ChipType,
+    pattern: "hatch" as PatternType,
   },
   {
     name: "ELENA ROSTOVA",
@@ -141,6 +159,7 @@ const PRESETS = [
     material: "obsidian" as MaterialType,
     foil: "gold" as FoilType,
     chip: "gold" as ChipType,
+    pattern: "circuit" as PatternType,
   },
   {
     name: "MARCUS CHEN",
@@ -150,6 +169,7 @@ const PRESETS = [
     material: "carbon" as MaterialType,
     foil: "neon" as FoilType,
     chip: "black" as ChipType,
+    pattern: "carbon" as PatternType,
   },
   {
     name: "SOPHIA AL-MANSOOR",
@@ -159,6 +179,7 @@ const PRESETS = [
     material: "gold" as MaterialType,
     foil: "gold" as FoilType,
     chip: "gold" as ChipType,
+    pattern: "honeycomb" as PatternType,
   },
 ];
 
@@ -167,7 +188,7 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
   accentColor = "#c6f36b",
   onOpenInquiry,
 }) => {
-  // Mode: "catalog" (curated editions stack) or "creator" (live customizer for guests)
+  // Mode: "creator" (live customizer for guests) or "catalog" (curated editions stack)
   const [activeTab, setActiveTab] = useState<"creator" | "catalog">("creator");
 
   // Catalog State
@@ -175,7 +196,7 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
   const [catalogIndex, setCatalogIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-  // Customizer State (for guests demo)
+  // Customizer State
   const [customName, setCustomName] = useState("ALEXANDER VANCE");
   const [customTitle, setCustomTitle] = useState("FOUNDER & MANAGING DIRECTOR");
   const [customCompany, setCustomCompany] = useState("VANCE CAPITAL PARTNERS");
@@ -183,7 +204,21 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
   const [customMaterial, setCustomMaterial] = useState<MaterialType>("titanium");
   const [customFoil, setCustomFoil] = useState<FoilType>("silver");
   const [customChip, setCustomChip] = useState<ChipType>("silver");
+  const [customPattern, setCustomPattern] = useState<PatternType>("hatch");
   const [isFlipped, setIsFlipped] = useState(false);
+
+  // Custom Color State
+  const [colorMode, setColorMode] = useState<"alloy" | "custom">("alloy");
+  const [customPrimaryColor, setCustomPrimaryColor] = useState("#0b121e");
+  const [customSecondaryColor, setCustomSecondaryColor] = useState("#15233b");
+  const [customAccentColor, setCustomAccentColor] = useState("#38bdf8");
+
+  // Custom Image Upload State
+  const [customBgImage, setCustomBgImage] = useState<string | null>(null);
+  const [bgImageOpacity, setBgImageOpacity] = useState(70);
+  const [customLogo, setCustomLogo] = useState<string | null>(null);
+  const bgFileInputRef = useRef<HTMLInputElement>(null);
+  const logoFileInputRef = useRef<HTMLInputElement>(null);
 
   // Interaction State
   const [isTapping, setIsTapping] = useState(false);
@@ -209,6 +244,17 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
   const activeCatalogCard = cards[catalogIndex] || cards[0];
   const activeMaterialConfig = MATERIALS[customMaterial];
   const activeFoilConfig = FOIL_STYLES[customFoil];
+
+  // Active Card Background Styles
+  const cardBackgroundStyle =
+    colorMode === "custom"
+      ? {
+          background: `linear-gradient(135deg, ${customPrimaryColor} 0%, ${customSecondaryColor} 100%)`,
+        }
+      : undefined;
+
+  const currentAccent =
+    colorMode === "custom" ? customAccentColor : activeMaterialConfig.accent;
 
   // 3D Perspective Tilt & Dynamic Glare Position
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -243,10 +289,10 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
       if (typeof window !== "undefined") {
         try {
           confetti({
-            particleCount: 45,
-            spread: 60,
+            particleCount: 50,
+            spread: 65,
             origin: { y: 0.65 },
-            colors: ["#c6f36b", "#38bdf8", "#f59e0b", "#ffffff"],
+            colors: [currentAccent, "#c6f36b", "#f59e0b", "#ffffff"],
             disableForReducedMotion: true,
           });
         } catch {
@@ -269,7 +315,24 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
     setCustomMaterial(preset.material);
     setCustomFoil(preset.foil);
     setCustomChip(preset.chip);
+    setCustomPattern(preset.pattern);
+    setColorMode("alloy");
+    setCustomBgImage(null);
     setIsFlipped(false);
+  };
+
+  const handleBgImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCustomBgImage(url);
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCustomLogo(url);
   };
 
   return (
@@ -278,7 +341,7 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] blur-[140px] rounded-full pointer-events-none transition-colors duration-700 opacity-25"
         style={{
-          backgroundColor: activeTab === "creator" ? activeMaterialConfig.accent : accentColor,
+          backgroundColor: activeTab === "creator" ? currentAccent : accentColor,
         }}
       />
 
@@ -330,11 +393,11 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
         </div>
 
         {/* ========================================================================= */}
-        {/* TAB 1: CUSTOM STUDIO CREATOR (FOR GUESTS TO EDIT & DEMO THEIR OWN CARD) */}
+        {/* TAB 1: CUSTOM STUDIO CREATOR */}
         {/* ========================================================================= */}
         {activeTab === "creator" ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-            {/* LEFT: 3D Dual-Sided Card Display with Live Specular Glare */}
+            {/* LEFT: 3D Dual-Sided Card Display */}
             <div className="lg:col-span-7 flex flex-col items-center">
               {/* Interaction Quick Bar */}
               <div className="flex flex-wrap items-center justify-between w-full max-w-[480px] gap-3 mb-6">
@@ -374,17 +437,70 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                   {/* FRONT FACE */}
                   {/* ============================================================= */}
                   <div
-                    className={`absolute inset-0 rounded-[24px] p-7 sm:p-9 flex flex-col justify-between border shadow-2xl bg-gradient-to-br ${activeMaterialConfig.gradientClass} ${activeMaterialConfig.borderClass} transition-colors duration-500`}
+                    className={`absolute inset-0 rounded-[24px] p-7 sm:p-9 flex flex-col justify-between border shadow-2xl overflow-hidden ${
+                      colorMode === "alloy"
+                        ? `bg-gradient-to-br ${activeMaterialConfig.gradientClass} ${activeMaterialConfig.borderClass}`
+                        : "border-white/20"
+                    } transition-all duration-500`}
                     style={{
+                      ...cardBackgroundStyle,
                       backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
                     }}
                   >
+                    {/* Uploaded Custom Background Image (if present) */}
+                    {customBgImage && (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center pointer-events-none transition-opacity duration-300"
+                        style={{
+                          backgroundImage: `url(${customBgImage})`,
+                          opacity: bgImageOpacity / 100,
+                        }}
+                      />
+                    )}
+
+                    {/* Procedural Pattern Overlays */}
+                    {customPattern === "carbon" && (
+                      <div
+                        className="absolute inset-0 pointer-events-none opacity-25"
+                        style={{
+                          backgroundImage: `repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.08) 2px, transparent 0, transparent 6px)`,
+                        }}
+                      />
+                    )}
+                    {customPattern === "circuit" && (
+                      <div
+                        className="absolute inset-0 pointer-events-none opacity-20"
+                        style={{
+                          backgroundImage: `radial-gradient(circle at 10px 10px, rgba(255,255,255,0.15) 2px, transparent 0), linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)`,
+                          backgroundSize: "24px 24px",
+                        }}
+                      />
+                    )}
+                    {customPattern === "honeycomb" && (
+                      <div
+                        className="absolute inset-0 pointer-events-none opacity-15"
+                        style={{
+                          backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.2) 1.5px, transparent 1.5px)`,
+                          backgroundSize: "16px 16px",
+                        }}
+                      />
+                    )}
+                    {customPattern === "hatch" && (
+                      <div
+                        className="absolute inset-0 pointer-events-none opacity-20"
+                        style={{
+                          backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.05) 25%, transparent 25%), linear-gradient(225deg, rgba(255,255,255,0.05) 25%, transparent 25%)`,
+                          backgroundSize: "12px 12px",
+                        }}
+                      />
+                    )}
+
                     {/* Dynamic Specular Glare Follows Cursor */}
                     <div
                       className="pointer-events-none absolute inset-0 rounded-[24px] opacity-40 transition-opacity duration-300"
                       style={{
-                        background: `radial-gradient(circle 380px at ${mousePos.glareX}% ${mousePos.glareY}%, rgba(255,255,255,0.22), transparent 70%)`,
+                        background: `radial-gradient(circle 380px at ${mousePos.glareX}% ${mousePos.glareY}%, rgba(255,255,255,0.25), transparent 70%)`,
                       }}
                     />
 
@@ -399,17 +515,32 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                       </div>
                     )}
 
-                    {/* FRONT TOP: Wordmark & NFC Protocol */}
+                    {/* FRONT TOP: Wordmark, Uploaded Logo & NFC Protocol */}
                     <div className="flex items-center justify-between relative z-10">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs tracking-widest text-[#90909c]">UIC</span>
-                        <span
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: activeMaterialConfig.accent }}
-                        />
-                        <span className="text-[10px] font-mono tracking-widest text-white/50">
-                          {activeMaterialConfig.weight}
-                        </span>
+                      <div className="flex items-center gap-2.5">
+                        {customLogo ? (
+                          <div className="h-6 max-w-[100px] flex items-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={customLogo}
+                              alt="Custom Brand Logo"
+                              className="max-h-full max-w-full object-contain filter drop-shadow"
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            <span className="font-mono text-xs tracking-widest text-white/90 font-bold">
+                              UIC
+                            </span>
+                            <span
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{ backgroundColor: currentAccent }}
+                            />
+                            <span className="text-[10px] font-mono tracking-widest text-white/60">
+                              {colorMode === "custom" ? "BESPOKE" : activeMaterialConfig.weight}
+                            </span>
+                          </>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2 text-xs font-mono text-white/80">
@@ -418,12 +549,12 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                         </span>
                         <Radio
                           className="w-3.5 h-3.5"
-                          style={{ color: activeMaterialConfig.accent }}
+                          style={{ color: currentAccent }}
                         />
                       </div>
                     </div>
 
-                    {/* FRONT CENTER: High-Detail Contact Microchip */}
+                    {/* FRONT CENTER: Contact Microchip */}
                     <div className="relative z-10 flex items-center gap-4 my-auto">
                       <div
                         className={`w-12 h-9 rounded-md border flex items-center justify-center p-1 transition-all ${
@@ -441,10 +572,10 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                       </div>
 
                       <div className="flex flex-col">
-                        <span className="text-[9px] uppercase font-mono tracking-widest text-white/40 block">
+                        <span className="text-[9px] uppercase font-mono tracking-widest text-white/50 block">
                           ENCRYPTED HARDWARE CREDENTIAL
                         </span>
-                        <span className="text-xs font-mono tracking-wider text-white/80">
+                        <span className="text-xs font-mono tracking-wider text-white/90">
                           {customCompany || "UIC ENTERPRISES"}
                         </span>
                       </div>
@@ -462,12 +593,12 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                       </div>
 
                       <div className="text-right">
-                        <span className="text-[9px] font-mono tracking-widest text-white/40 block">
+                        <span className="text-[9px] font-mono tracking-widest text-white/50 block">
                           NFC ACTIVE
                         </span>
                         <span
                           className="text-xs font-mono font-semibold"
-                          style={{ color: activeMaterialConfig.accent }}
+                          style={{ color: currentAccent }}
                         >
                           TOUCH TAP
                         </span>
@@ -479,8 +610,13 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                   {/* BACK FACE (Flipped 180deg) */}
                   {/* ============================================================= */}
                   <div
-                    className={`absolute inset-0 rounded-[24px] p-7 sm:p-9 flex flex-col justify-between border shadow-2xl bg-gradient-to-br ${activeMaterialConfig.gradientClass} ${activeMaterialConfig.borderClass} transition-colors duration-500`}
+                    className={`absolute inset-0 rounded-[24px] p-7 sm:p-9 flex flex-col justify-between border shadow-2xl overflow-hidden ${
+                      colorMode === "alloy"
+                        ? `bg-gradient-to-br ${activeMaterialConfig.gradientClass} ${activeMaterialConfig.borderClass}`
+                        : "border-white/20"
+                    } transition-all duration-500`}
                     style={{
+                      ...cardBackgroundStyle,
                       backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
@@ -509,7 +645,6 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
 
                     {/* Signature Strip & Simulated QR Matrix */}
                     <div className="relative z-10 flex items-center justify-between gap-6 my-auto pt-2">
-                      {/* Signature Strip */}
                       <div className="flex-1 h-9 bg-white/10 rounded border border-white/15 px-3 flex items-center justify-between">
                         <span className="font-serif italic text-xs text-white/60">
                           {customName.toLowerCase().replace(/\s+/g, ".")}
@@ -519,7 +654,6 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                         </span>
                       </div>
 
-                      {/* High-Contrast Dynamic QR Code Graphic */}
                       <div className="w-16 h-16 rounded-xl bg-white p-1.5 flex items-center justify-center flex-shrink-0 shadow-md">
                         <QrCode className="w-full h-full text-[#080809]" />
                       </div>
@@ -694,43 +828,295 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                   />
                 </div>
 
-                {/* Material Selection (5 Finishes) */}
+                {/* COLOR & MATERIAL MODE TOGGLE */}
                 <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] flex items-center justify-between">
-                    <span>Base Alloy & Material Finish</span>
-                    <span className="text-[10px] text-[#c6f36b] font-medium">
-                      {activeMaterialConfig.name}
-                    </span>
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {(Object.keys(MATERIALS) as MaterialType[]).map((matKey) => {
-                      const mat = MATERIALS[matKey];
-                      const isSelected = customMaterial === matKey;
-                      return (
-                        <button
-                          key={matKey}
-                          onClick={() => setCustomMaterial(matKey)}
-                          className={`p-2.5 rounded-xl text-left transition-all border flex items-center justify-between ${
-                            isSelected
-                              ? "bg-white/[0.08] border-[#c6f36b] shadow-md"
-                              : "bg-[#141418] border-white/[0.06] hover:border-white/20"
-                          }`}
-                        >
-                          <div className="min-w-0">
-                            <span className="text-xs font-medium text-white block truncate">
-                              {mat.name}
-                            </span>
-                            <span className="text-[10px] font-mono text-[#90909c] block truncate">
-                              {mat.weight} &bull; {mat.category.split(" ")[0]}
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c]">
+                      Finish & Palette Mode
+                    </label>
+                    <div className="inline-flex rounded-lg bg-white/[0.04] p-0.5 border border-white/10">
+                      <button
+                        onClick={() => setColorMode("alloy")}
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-mono uppercase transition-colors ${
+                          colorMode === "alloy"
+                            ? "bg-[#c6f36b] text-[#080809] font-bold"
+                            : "text-[#90909c] hover:text-white"
+                        }`}
+                      >
+                        Aerospace Alloys
+                      </button>
+                      <button
+                        onClick={() => setColorMode("custom")}
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-mono uppercase transition-colors flex items-center gap-1 ${
+                          colorMode === "custom"
+                            ? "bg-[#c6f36b] text-[#080809] font-bold"
+                            : "text-[#90909c] hover:text-white"
+                        }`}
+                      >
+                        <Palette className="w-3 h-3" />
+                        <span>Custom Color</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Mode 1: Predefined Aerospace Alloys */}
+                  {colorMode === "alloy" ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                      {(Object.keys(MATERIALS) as MaterialType[]).map((matKey) => {
+                        const mat = MATERIALS[matKey];
+                        const isSelected = customMaterial === matKey;
+                        return (
+                          <button
+                            key={matKey}
+                            onClick={() => setCustomMaterial(matKey)}
+                            className={`p-2.5 rounded-xl text-left transition-all border flex items-center justify-between ${
+                              isSelected
+                                ? "bg-white/[0.08] border-[#c6f36b] shadow-md"
+                                : "bg-[#141418] border-white/[0.06] hover:border-white/20"
+                            }`}
+                          >
+                            <div className="min-w-0">
+                              <span className="text-xs font-medium text-white block truncate">
+                                {mat.name}
+                              </span>
+                              <span className="text-[10px] font-mono text-[#90909c] block truncate">
+                                {mat.weight} &bull; {mat.category.split(" ")[0]}
+                              </span>
+                            </div>
+                            <span
+                              className="w-3 h-3 rounded-full flex-shrink-0 ml-2 border border-white/20"
+                              style={{ backgroundColor: mat.accent }}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* Mode 2: Custom Color Creator & Curated Palette */
+                    <div className="flex flex-col gap-3 mt-1 p-3.5 rounded-2xl bg-[#141418] border border-white/10">
+                      {/* Curated Luxury Swatches */}
+                      <div>
+                        <span className="text-[10px] font-mono uppercase text-[#90909c] block mb-2">
+                          Select Luxury Palette:
+                        </span>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {LUXURY_PALETTES.map((pal, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                setCustomPrimaryColor(pal.primary);
+                                setCustomSecondaryColor(pal.secondary);
+                                setCustomAccentColor(pal.accent);
+                              }}
+                              className="p-1.5 rounded-lg border border-white/10 hover:border-white/30 flex flex-col items-center gap-1 transition-colors group"
+                              title={pal.name}
+                            >
+                              <div
+                                className="w-full h-4 rounded"
+                                style={{
+                                  background: `linear-gradient(135deg, ${pal.primary}, ${pal.secondary})`,
+                                }}
+                              />
+                              <span className="text-[9px] font-mono text-[#90909c] truncate max-w-full">
+                                {pal.name.split(" ")[0]}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Precise Color Pickers */}
+                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/[0.06]">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-mono text-[#90909c]">Primary</label>
+                          <div className="flex items-center gap-1.5 bg-[#0a0a0c] p-1 rounded-lg border border-white/10">
+                            <input
+                              type="color"
+                              value={customPrimaryColor}
+                              onChange={(e) => setCustomPrimaryColor(e.target.value)}
+                              className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent"
+                            />
+                            <span className="text-[10px] font-mono text-white truncate">
+                              {customPrimaryColor}
                             </span>
                           </div>
-                          <span
-                            className="w-3 h-3 rounded-full flex-shrink-0 ml-2 border border-white/20"
-                            style={{ backgroundColor: mat.accent }}
-                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-mono text-[#90909c]">Secondary</label>
+                          <div className="flex items-center gap-1.5 bg-[#0a0a0c] p-1 rounded-lg border border-white/10">
+                            <input
+                              type="color"
+                              value={customSecondaryColor}
+                              onChange={(e) => setCustomSecondaryColor(e.target.value)}
+                              className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent"
+                            />
+                            <span className="text-[10px] font-mono text-white truncate">
+                              {customSecondaryColor}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-mono text-[#90909c]">Accent</label>
+                          <div className="flex items-center gap-1.5 bg-[#0a0a0c] p-1 rounded-lg border border-white/10">
+                            <input
+                              type="color"
+                              value={customAccentColor}
+                              onChange={(e) => setCustomAccentColor(e.target.value)}
+                              className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent"
+                            />
+                            <span className="text-[10px] font-mono text-white truncate">
+                              {customAccentColor}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* CARD SURFACE PATTERN */}
+                <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] flex items-center justify-between">
+                    <span>Card Surface Texture Pattern</span>
+                    <span className="text-[10px] text-[#c6f36b] capitalize">{customPattern}</span>
+                  </label>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {[
+                      { id: "none", label: "Clean" },
+                      { id: "carbon", label: "Carbon" },
+                      { id: "circuit", label: "Circuit" },
+                      { id: "honeycomb", label: "Honeycomb" },
+                      { id: "hatch", label: "Hatch" },
+                    ].map((pat) => (
+                      <button
+                        key={pat.id}
+                        onClick={() => setCustomPattern(pat.id as PatternType)}
+                        className={`p-1.5 rounded-xl text-center text-xs font-mono transition-all border ${
+                          customPattern === pat.id
+                            ? "bg-white/[0.1] border-[#c6f36b] text-white font-bold"
+                            : "bg-[#141418] border-white/[0.06] text-[#90909c] hover:text-white"
+                        }`}
+                      >
+                        <Grid className="w-3.5 h-3.5 mx-auto mb-1 text-[#c6f36b]" />
+                        <span className="text-[9px] block truncate">{pat.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* IMAGE & LOGO UPLOADS */}
+                <div className="flex flex-col gap-3 pt-2 border-t border-white/[0.06]">
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] flex items-center justify-between">
+                    <span>Upload Custom Artwork & Brand Logo</span>
+                    <span className="text-[10px] text-[#585863]">PNG / JPG / WEBP</span>
+                  </label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {/* Background Artwork Upload */}
+                    <div className="p-3 rounded-2xl bg-[#141418] border border-white/10 flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono text-white flex items-center gap-1.5">
+                          <ImageIcon className="w-3.5 h-3.5 text-[#c6f36b]" />
+                          <span>Card Artwork</span>
+                        </span>
+                        {customBgImage && (
+                          <button
+                            onClick={() => setCustomBgImage(null)}
+                            className="p-1 rounded hover:bg-white/10 text-red-400"
+                            title="Remove Background Image"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      <input
+                        ref={bgFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBgImageUpload}
+                        className="hidden"
+                      />
+
+                      {customBgImage ? (
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-[10px] font-mono text-[#c6f36b]">
+                            &check; Custom Artwork Loaded
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-mono text-[#90909c]">Opacity</span>
+                            <input
+                              type="range"
+                              min={20}
+                              max={100}
+                              value={bgImageOpacity}
+                              onChange={(e) => setBgImageOpacity(Number(e.target.value))}
+                              className="w-full h-1 bg-white/20 rounded accent-[#c6f36b]"
+                            />
+                            <span className="text-[9px] font-mono text-white">{bgImageOpacity}%</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => bgFileInputRef.current?.click()}
+                          className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[11px] font-mono text-[#90909c] hover:text-white transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <Upload className="w-3 h-3" />
+                          <span>Upload Background</span>
                         </button>
-                      );
-                    })}
+                      )}
+                    </div>
+
+                    {/* Brand Logo Upload */}
+                    <div className="p-3 rounded-2xl bg-[#141418] border border-white/10 flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono text-white flex items-center gap-1.5">
+                          <ShieldCheck className="w-3.5 h-3.5 text-[#c6f36b]" />
+                          <span>Brand Logo</span>
+                        </span>
+                        {customLogo && (
+                          <button
+                            onClick={() => setCustomLogo(null)}
+                            className="p-1 rounded hover:bg-white/10 text-red-400"
+                            title="Remove Logo"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      <input
+                        ref={logoFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                      />
+
+                      {customLogo ? (
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono text-[#c6f36b]">
+                            &check; Logo Displayed on Card
+                          </span>
+                          <button
+                            onClick={() => logoFileInputRef.current?.click()}
+                            className="text-[10px] font-mono text-[#90909c] underline hover:text-white"
+                          >
+                            Replace
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => logoFileInputRef.current?.click()}
+                          className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[11px] font-mono text-[#90909c] hover:text-white transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <Upload className="w-3 h-3" />
+                          <span>Upload Logo / Crest</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -812,7 +1198,7 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
           </div>
         ) : (
           /* ========================================================================= */
-          /* TAB 2: STUDIO CATALOG (ORIGINAL ACETERMITY 3D STACKED EDITIONS) */
+          /* TAB 2: STUDIO CATALOG (ACETERMITY 3D STACKED EDITIONS) */
           /* ========================================================================= */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             {/* LEFT: Aceternity 3D Card Stack */}
