@@ -648,6 +648,264 @@ export const SectionForm: React.FC<SectionFormProps> = ({
       );
     }
 
+    case "workCarousel": {
+      const carousel = sections.workCarousel || {
+        id: "workCarousel",
+        enabled: true,
+        label: "Featured Work Showcase",
+        title: "Selected works in motion.",
+        subtitle: "A kinetic carousel presentation of our signature digital engineering projects.",
+        autoplay: true,
+        autoplayInterval: 4500,
+        projects: [],
+      };
+
+      return (
+        <div className="flex flex-col gap-6 max-w-3xl">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-white">Work Listing Carousel</h2>
+              <p className="text-xs text-[#90909c] mt-1">
+                A kinetic horizontal carousel displaying projects with swipe, autoplay, and deep-dive modal inspect.
+              </p>
+            </div>
+
+            {/* Visibility Toggle Button */}
+            <button
+              onClick={() => updateSection("workCarousel", { enabled: !carousel.enabled })}
+              className={`px-3 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider border transition-all flex items-center gap-1.5 ${
+                carousel.enabled
+                  ? "bg-[#c6f36b]/20 border-[#c6f36b] text-[#c6f36b] font-semibold"
+                  : "bg-white/[0.04] border-white/10 text-[#90909c]"
+              }`}
+            >
+              {carousel.enabled ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+              <span>{carousel.enabled ? "Visible on Page" : "Hidden from Page"}</span>
+            </button>
+          </div>
+
+          {/* Section Headers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] block mb-1.5">
+                Section Label
+              </label>
+              <input
+                type="text"
+                value={carousel.label}
+                onChange={(e) => updateSection("workCarousel", { label: e.target.value })}
+                className="w-full bg-[#161619] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c6f36b]"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] block mb-1.5">
+                Section Title
+              </label>
+              <input
+                type="text"
+                value={carousel.title}
+                onChange={(e) => updateSection("workCarousel", { title: e.target.value })}
+                className="w-full bg-[#161619] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c6f36b]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] block mb-1.5">
+              Section Subtitle
+            </label>
+            <input
+              type="text"
+              value={carousel.subtitle}
+              onChange={(e) => updateSection("workCarousel", { subtitle: e.target.value })}
+              className="w-full bg-[#161619] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c6f36b]"
+            />
+          </div>
+
+          {/* Carousel Motion Settings */}
+          <div className="p-4 rounded-2xl bg-[#121215] border border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-medium text-white block">Autoplay Motion</span>
+                <span className="text-[10px] text-[#90909c]">Automatically cycle through slides</span>
+              </div>
+              <button
+                onClick={() => updateSection("workCarousel", { autoplay: !carousel.autoplay })}
+                className={`px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider border transition-colors ${
+                  carousel.autoplay
+                    ? "bg-[#c6f36b]/20 border-[#c6f36b] text-[#c6f36b]"
+                    : "bg-white/[0.04] border-white/10 text-[#90909c]"
+                }`}
+              >
+                {carousel.autoplay ? "Enabled" : "Paused"}
+              </button>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-medium text-white">Slide Duration</span>
+                <span className="text-[11px] font-mono text-[#c6f36b]">{carousel.autoplayInterval || 4500}ms</span>
+              </div>
+              <input
+                type="range"
+                min={2500}
+                max={9000}
+                step={500}
+                value={carousel.autoplayInterval || 4500}
+                onChange={(e) => updateSection("workCarousel", { autoplayInterval: Number(e.target.value) })}
+                className="w-full accent-[#c6f36b]"
+              />
+            </div>
+          </div>
+
+          {/* Add Project Button */}
+          <div className="flex items-center justify-between pt-4 border-t border-white/[0.08]">
+            <span className="text-xs font-mono uppercase tracking-wider text-white">
+              Carousel Slides ({carousel.projects.length})
+            </span>
+            <button
+              onClick={() => {
+                const newProj = {
+                  id: `caro-${Date.now()}`,
+                  title: "New Featured Project",
+                  category: "Web Platform",
+                  description: "Custom digital identity experience engineered for global performance.",
+                  image: "/images/nfccard.webp",
+                  link: "#contact",
+                  isConcept: false,
+                  deliverables: ["Next.js App", "Tailwind Theme", "Custom Domain"],
+                  year: "2025",
+                };
+                updateSection("workCarousel", { projects: [...carousel.projects, newProj] });
+              }}
+              className="text-xs font-mono text-[#c6f36b] hover:underline flex items-center gap-1 font-medium"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Slide</span>
+            </button>
+          </div>
+
+          {/* Projects List */}
+          <div className="flex flex-col gap-6">
+            {carousel.projects.map((proj, idx) => (
+              <div key={proj.id} className="p-5 rounded-2xl bg-[#121215] border border-white/10 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono text-[#585863]">Slide 0{idx + 1}</span>
+                  <div className="flex items-center gap-3">
+                    {/* Concept Toggle */}
+                    <button
+                      onClick={() => {
+                        const updated = [...carousel.projects];
+                        updated[idx] = { ...proj, isConcept: !proj.isConcept };
+                        updateSection("workCarousel", { projects: updated });
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider border transition-colors flex items-center gap-1.5 ${
+                        proj.isConcept
+                          ? "bg-[#c6f36b]/20 border-[#c6f36b] text-[#c6f36b]"
+                          : "bg-white/[0.04] border-white/10 text-[#90909c]"
+                      }`}
+                    >
+                      {proj.isConcept ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
+                      <span>Concept Study</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const updated = carousel.projects.filter((_, i) => i !== idx);
+                        updateSection("workCarousel", { projects: updated });
+                      }}
+                      className="text-[#585863] hover:text-red-400 p-1 transition-colors"
+                      title="Delete slide"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    value={proj.title}
+                    onChange={(e) => {
+                      const updated = [...carousel.projects];
+                      updated[idx] = { ...proj, title: e.target.value };
+                      updateSection("workCarousel", { projects: updated });
+                    }}
+                    placeholder="Project Title"
+                    className="bg-[#18181d] border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+                  />
+                  <input
+                    type="text"
+                    value={proj.category}
+                    onChange={(e) => {
+                      const updated = [...carousel.projects];
+                      updated[idx] = { ...proj, category: e.target.value };
+                      updateSection("workCarousel", { projects: updated });
+                    }}
+                    placeholder="Category (e.g. Web Platform)"
+                    className="bg-[#18181d] border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+                  />
+                  <input
+                    type="text"
+                    value={proj.year}
+                    onChange={(e) => {
+                      const updated = [...carousel.projects];
+                      updated[idx] = { ...proj, year: e.target.value };
+                      updateSection("workCarousel", { projects: updated });
+                    }}
+                    placeholder="Year"
+                    className="bg-[#18181d] border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+                  />
+                </div>
+
+                <textarea
+                  rows={2}
+                  value={proj.description}
+                  onChange={(e) => {
+                    const updated = [...carousel.projects];
+                    updated[idx] = { ...proj, description: e.target.value };
+                    updateSection("workCarousel", { projects: updated });
+                  }}
+                  placeholder="Case study summary"
+                  className="bg-[#18181d] border border-white/10 rounded-lg px-3 py-2 text-xs text-white resize-none"
+                />
+
+                <div>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-[#90909c] block mb-1">
+                    Deliverables (comma separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={(proj.deliverables || []).join(", ")}
+                    onChange={(e) => {
+                      const updated = [...carousel.projects];
+                      updated[idx] = {
+                        ...proj,
+                        deliverables: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                      };
+                      updateSection("workCarousel", { projects: updated });
+                    }}
+                    placeholder="Hardware Milling, Dynamic OTA Router, vCard Sync"
+                    className="w-full bg-[#18181d] border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+                  />
+                </div>
+
+                <MediaUploader
+                  label="Carousel Project Visual"
+                  currentUrl={proj.image}
+                  onUrlChange={(url) => {
+                    const updated = [...carousel.projects];
+                    updated[idx] = { ...proj, image: url };
+                    updateSection("workCarousel", { projects: updated });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     case "testimonials": {
       const test = sections.testimonials;
       return (

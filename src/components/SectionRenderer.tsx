@@ -7,6 +7,7 @@ import { StudioIntro } from "@/components/StudioIntro";
 import { Services } from "@/components/Services";
 import { NfcShowcase } from "@/components/NfcShowcase";
 import { SelectedWork } from "@/components/SelectedWork";
+import { WorkCarousel } from "@/components/WorkCarousel";
 import { Process } from "@/components/Process";
 import { Testimonials } from "@/components/Testimonials";
 import { Faq } from "@/components/Faq";
@@ -70,6 +71,16 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
               <SelectedWork
                 key="work"
                 content={sections.work}
+                accentColor={accentColor}
+                onOpenInquiry={onOpenInquiry}
+              />
+            ) : null;
+
+          case "workCarousel":
+            return sections.workCarousel?.enabled ? (
+              <WorkCarousel
+                key="workCarousel"
+                content={sections.workCarousel}
                 accentColor={accentColor}
                 onOpenInquiry={onOpenInquiry}
               />

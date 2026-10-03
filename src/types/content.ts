@@ -99,6 +99,18 @@ export interface WorkSectionContent {
   label: string;
   title: string;
   subtitle: string;
+  layout?: "grid" | "carousel";
+  projects: ProjectItem[];
+}
+
+export interface WorkCarouselSectionContent {
+  id: string;
+  enabled: boolean;
+  label: string;
+  title: string;
+  subtitle: string;
+  autoplay?: boolean;
+  autoplayInterval?: number; // milliseconds, e.g. 4500
   projects: ProjectItem[];
 }
 
@@ -200,6 +212,7 @@ export type SectionType =
   | "services"
   | "nfcShowcase"
   | "work"
+  | "workCarousel"
   | "process"
   | "testimonials"
   | "faq"
@@ -215,6 +228,7 @@ export interface SiteContent {
     services: ServicesSectionContent;
     nfcShowcase: NfcShowcaseSectionContent;
     work: WorkSectionContent;
+    workCarousel: WorkCarouselSectionContent;
     process: ProcessSectionContent;
     testimonials: TestimonialsSectionContent;
     faq: FaqSectionContent;

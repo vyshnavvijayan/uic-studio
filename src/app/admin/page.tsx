@@ -206,11 +206,13 @@ function AdminEditorContent() {
   };
 
   const handleToggleVisibility = (sectionKey: SectionType) => {
-    const isCurrentlyEnabled = content.sections[sectionKey].enabled;
+    const sec = content.sections[sectionKey];
+    if (!sec) return;
+    const isCurrentlyEnabled = sec.enabled;
     const updatedSections = {
       ...content.sections,
       [sectionKey]: {
-        ...content.sections[sectionKey],
+        ...sec,
         enabled: !isCurrentlyEnabled,
       },
     };
@@ -232,10 +234,12 @@ function AdminEditorContent() {
 
   const handleAddSection = (sectionKey: SectionType) => {
     const newOrder = [...content.sectionOrder, sectionKey];
+    const sec = content.sections[sectionKey];
+    if (!sec) return;
     const updatedSections = {
       ...content.sections,
       [sectionKey]: {
-        ...content.sections[sectionKey],
+        ...sec,
         enabled: true,
       },
     };
