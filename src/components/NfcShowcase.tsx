@@ -188,8 +188,8 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
   accentColor = "#c6f36b",
   onOpenInquiry,
 }) => {
-  // Mode: "creator" (live customizer for guests) or "catalog" (curated editions stack)
-  const [activeTab, setActiveTab] = useState<"creator" | "catalog">("creator");
+  // Mode: "catalog" (default signature editions stack) or "creator" (live customizer for guests)
+  const [activeTab, setActiveTab] = useState<"creator" | "catalog">("catalog");
 
   // Catalog State
   const [cards, setCards] = useState<NfcCardItem[]>(content.cards);
@@ -364,6 +364,18 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
           {/* Mode Switcher Tabs */}
           <div className="inline-flex items-center p-1 rounded-2xl bg-[#121215] border border-white/[0.08]">
             <button
+              onClick={() => setActiveTab("catalog")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-all ${
+                activeTab === "catalog"
+                  ? "bg-[#c6f36b] text-[#080809] font-bold shadow-lg"
+                  : "text-[#90909c] hover:text-white"
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Studio Catalog ({cards.length})</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("creator")}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-all ${
                 activeTab === "creator"
@@ -373,21 +385,11 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
             >
               <Wand2 className="w-3.5 h-3.5" />
               <span>Custom Studio Creator</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 text-current">
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                activeTab === "creator" ? "bg-black/20 text-[#080809]" : "bg-[#c6f36b]/15 text-[#c6f36b]"
+              }`}>
                 Live Demo
               </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("catalog")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-all ${
-                activeTab === "catalog"
-                  ? "bg-white/10 text-white font-semibold"
-                  : "text-[#90909c] hover:text-white"
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Studio Catalog ({cards.length})</span>
             </button>
           </div>
         </div>
