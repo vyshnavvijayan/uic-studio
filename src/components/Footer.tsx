@@ -71,16 +71,6 @@ export const Footer: React.FC<FooterProps> = ({
                 <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
             ))}
-
-            <div className="pt-4 mt-2 border-t border-white/[0.04]">
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] hover:border-white/20 text-[#c6f36b] transition-colors"
-              >
-                <span>CMS Admin Portal</span>
-                <span className="text-[10px] text-[#90909c]">→</span>
-              </Link>
-            </div>
           </div>
         </div>
 

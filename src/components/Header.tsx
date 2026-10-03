@@ -59,15 +59,8 @@ export const Header: React.FC<HeaderProps> = ({ brand, onOpenInquiry }) => {
           ))}
         </nav>
 
-        {/* Action Button & Admin Link */}
+        {/* Action Button */}
         <div className="hidden md:flex items-center gap-4">
-          <Link
-            href="/admin"
-            className="text-xs text-[#90909c] hover:text-white transition-colors font-mono tracking-wider px-2 py-1"
-            title="CMS Admin Portal"
-          >
-            Admin
-          </Link>
           <button
             onClick={onOpenInquiry}
             className="relative group overflow-hidden rounded-full border border-[#c6f36b]/40 bg-[#c6f36b]/10 hover:bg-[#c6f36b] text-[#c6f36b] hover:text-[#080809] px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-300 flex items-center gap-1.5"
@@ -110,13 +103,6 @@ export const Header: React.FC<HeaderProps> = ({ brand, onOpenInquiry }) => {
             >
               Start Commission
             </button>
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-center text-xs text-[#90909c] hover:text-white font-mono py-1"
-            >
-              CMS Admin Access →
-            </Link>
           </div>
         </div>
       )}
