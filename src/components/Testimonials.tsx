@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { TestimonialsSectionContent } from "@/types/content";
-import { Play, Pause, Quote } from "lucide-react";
+import { Quote } from "lucide-react";
 
 interface TestimonialsProps {
   content: TestimonialsSectionContent;
@@ -13,8 +13,6 @@ export const Testimonials: React.FC<TestimonialsProps> = ({
   content,
   accentColor = "#c6f36b",
 }) => {
-  const [isPaused, setIsPaused] = useState(false);
-
   // Keep placeholder testimonials hidden until the admin approves them
   const approvedItems = content.items.filter((item) => item.approved);
 
@@ -40,18 +38,6 @@ export const Testimonials: React.FC<TestimonialsProps> = ({
             {content.title}
           </h2>
         </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsPaused(!isPaused)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-xs font-mono text-[#90909c] hover:text-white transition-colors"
-            title={isPaused ? "Resume marquee" : "Pause marquee"}
-            aria-label="Toggle marquee animation"
-          >
-            {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-            <span>{isPaused ? "RESUME" : "PAUSE"}</span>
-          </button>
-        </div>
       </div>
 
       {/* MARQUEE WRAPPER WITH FADED GRADIENT EDGES */}
@@ -60,13 +46,11 @@ export const Testimonials: React.FC<TestimonialsProps> = ({
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-44 bg-gradient-to-r from-[#080809] to-transparent z-10" />
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-44 bg-gradient-to-l from-[#080809] to-transparent z-10" />
 
-        <div className={`flex gap-6 animate-marquee ${isPaused ? "marquee-paused" : ""}`}>
+        <div className="flex gap-6 animate-marquee">
           {marqueeItems.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
               tabIndex={0}
-              onFocus={() => setIsPaused(true)}
-              onBlur={() => setIsPaused(false)}
               className="w-[340px] sm:w-[420px] flex-shrink-0 p-8 rounded-2xl bg-[#0d0d10] border border-white/[0.06] hover:border-white/20 transition-all flex flex-col justify-between"
             >
               <div>
