@@ -16,22 +16,20 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
-  const cinematicImgRef = useRef<HTMLImageElement | null>(null);
+  const remasteredImagesRef = useRef<HTMLImageElement[]>([]);
 
   const [loadedCount, setLoadedCount] = useState(0);
-  const [cinematicLoaded, setCinematicLoaded] = useState(false);
+  const [remasteredLoaded, setRemasteredLoaded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  const mode = content.mode || "cinematic";
+  // Engine mode: "frames" (enhanced original 44-frame walk sequence) or "remastered" (8K staged)
+  const mode = content.mode || "frames";
   const totalFrames = content.totalFrames || 44;
-  const currentFrameRef = useRef(0);
   const currentProgressRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
   const isIntersectingRef = useRef(true);
-
-  const cinematicUrl = content.cinematicImageUrl || "/images/hero-cinematic.jpg";
 
   // Check prefers-reduced-motion
   useEffect(() => {
@@ -44,22 +42,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     }
   }, []);
 
-  // Preload single high-res cinematic image
-  useEffect(() => {
-    let active = true;
-    const img = new Image();
-    img.src = cinematicUrl;
-    img.onload = () => {
-      if (!active) return;
-      cinematicImgRef.current = img;
-      setCinematicLoaded(true);
-    };
-    return () => {
-      active = false;
-    };
-  }, [cinematicUrl]);
-
-  // Preload all 44 frames for frame mode
+  // Preload all 44 original frames (sitting in chair -> rising -> walking forward)
   useEffect(() => {
     let active = true;
     const loadedImages: HTMLImageElement[] = [];
@@ -89,105 +72,171 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     };
   }, [totalFrames, content.frameBasePath]);
 
-  // Render scene on canvas (supports both cinematic dolly zoom and frame sequence)
-  const renderScene = useCallback((progress: number) => {
+  // Preload 8K remastered keyframe images
+  useEffect(() => {
+    let active = true;
+    const stages = [
+      "/images/remastered/stage1_sitting.jpg",
+      "/images/remastered/stage2_rising.jpg",
+      "/images/remastered/stage3_walking.jpg",
+    ];
+
+    const loaded: HTMLImageElement[] = [];
+    let loadedStages = 0;
+
+    stages.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        if (!active) return;
+        loadedStages++;
+        if (loadedStages === stages.length) {
+          setRemasteredLoaded(true);
+        }
+      };
+      loaded.push(img);
+    });
+
+    remasteredImagesRef.current = loaded;
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Draw enhanced frame on canvas
+  const renderCanvas = useCallback((progress: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
     const width = canvas.width;
     const height = canvas.height;
 
-    ctx.clearRect(0, 0, width, height);
+    // Enable high-quality bicubic image smoothing
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
 
-    if (mode === "cinematic" && cinematicImgRef.current && cinematicImgRef.current.complete) {
-      const img = cinematicImgRef.current;
-      const imgRatio = img.naturalWidth / img.naturalHeight;
-      const canvasRatio = width / height;
+    // Set pitch black background
+    ctx.fillStyle = "#080809";
+    ctx.fillRect(0, 0, width, height);
 
-      // Base cover dimensions
-      let baseWidth = width;
-      let baseHeight = height;
-      if (canvasRatio > imgRatio) {
-        baseHeight = width / imgRatio;
+    if (mode === "remastered" && remasteredLoaded && remasteredImagesRef.current.length === 3) {
+      // 8K Remastered 3-Stage Cinematic Progression (Sitting -> Rising -> Walking)
+      const stages = remasteredImagesRef.current;
+      let imgA = stages[0];
+      let imgB = stages[1];
+      let blend = 0;
+
+      if (progress < 0.45) {
+        // Stage 1 to Stage 2: Sitting to Rising
+        imgA = stages[0];
+        imgB = stages[1];
+        blend = Math.max(0, Math.min(1, (progress - 0.15) / 0.3));
       } else {
-        baseWidth = height * imgRatio;
+        // Stage 2 to Stage 3: Rising to Walking forward
+        imgA = stages[1];
+        imgB = stages[2];
+        blend = Math.max(0, Math.min(1, (progress - 0.45) / 0.4));
       }
 
-      // Smooth camera dolly push on scroll: scale expands from 1.00 to 1.18
-      const scale = 1.0 + progress * 0.18;
-      const drawWidth = baseWidth * scale;
-      const drawHeight = baseHeight * scale;
-
-      // Subtle upward pan as camera pushes forward
-      const panY = -progress * (height * 0.04);
-
-      const offsetX = (width - drawWidth) / 2;
-      const offsetY = (height - drawHeight) / 2 + panY;
-
-      ctx.save();
-      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-
-      // Dynamic breathing spotlight and luxury chiaroscuro gradient
-      const spotlightRadius = width * (0.28 + progress * 0.12);
-      const gradient = ctx.createRadialGradient(
-        width / 2,
-        height * 0.35 + panY,
-        spotlightRadius * 0.2,
-        width / 2,
-        height * 0.45,
-        spotlightRadius * 2.2
-      );
-      gradient.addColorStop(0, "rgba(8, 8, 9, 0)");
-      gradient.addColorStop(0.65, "rgba(8, 8, 9, 0.45)");
-      gradient.addColorStop(1, "rgba(8, 8, 9, 0.88)");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.restore();
-    } else {
-      // 44-frame sequence fallback
-      const targetFrame = Math.min(
-        totalFrames - 1,
-        Math.floor(progress * totalFrames)
-      );
-      const img = imagesRef.current[targetFrame] || imagesRef.current[0];
-      if (!img || !img.complete || img.naturalWidth === 0) return;
-
-      const imgRatio = img.naturalWidth / img.naturalHeight;
+      const imgRatio = imgA.naturalWidth / imgA.naturalHeight;
       const canvasRatio = width / height;
 
       let drawWidth = width;
       let drawHeight = height;
-      let offsetX = 0;
-      let offsetY = 0;
-
       if (canvasRatio > imgRatio) {
         drawHeight = width / imgRatio;
-        offsetY = (height - drawHeight) / 2;
       } else {
         drawWidth = height * imgRatio;
-        offsetX = (width - drawWidth) / 2;
       }
 
-      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      // Smooth camera dolly push
+      const scale = 1.0 + progress * 0.15;
+      const finalW = drawWidth * scale;
+      const finalH = drawHeight * scale;
+      const offsetX = (width - finalW) / 2;
+      const offsetY = (height - finalH) / 2 - progress * (height * 0.03);
 
-      // Vignette
-      const gradient = ctx.createRadialGradient(
-        width / 2,
-        height / 2,
-        width * 0.18,
-        width / 2,
-        height / 2,
-        width * 0.75
-      );
-      gradient.addColorStop(0, "rgba(8, 8, 9, 0)");
-      gradient.addColorStop(1, "rgba(8, 8, 9, 0.75)");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
+      ctx.save();
+      ctx.filter = "contrast(1.08) brightness(1.02) saturate(1.04)";
+      ctx.globalAlpha = 1;
+      ctx.drawImage(imgA, offsetX, offsetY, finalW, finalH);
+
+      if (blend > 0) {
+        ctx.globalAlpha = blend;
+        ctx.drawImage(imgB, offsetX, offsetY, finalW, finalH);
+      }
+      ctx.restore();
+    } else {
+      // Enhanced 44-Frame Sequence (sitting in chair -> rising -> walking forward)
+      const images = imagesRef.current;
+      if (images.length === 0) return;
+
+      const total = totalFrames - 1;
+      const rawFrame = progress * total;
+      const frameA = Math.min(total, Math.max(0, Math.floor(rawFrame)));
+      const frameB = Math.min(total, frameA + 1);
+      const blend = rawFrame - frameA;
+
+      const imgA = images[frameA] || images[0];
+      const imgB = images[frameB] || imgA;
+
+      if (!imgA || !imgA.complete || imgA.naturalWidth === 0) return;
+
+      const imgRatio = imgA.naturalWidth / imgA.naturalHeight;
+      const canvasRatio = width / height;
+
+      let drawWidth = width;
+      let drawHeight = height;
+      if (canvasRatio > imgRatio) {
+        drawHeight = width / imgRatio;
+      } else {
+        drawWidth = height * imgRatio;
+      }
+
+      // Smooth subtle camera tracking as person stands and walks forward
+      const scale = 1.0 + progress * 0.12;
+      const finalW = drawWidth * scale;
+      const finalH = drawHeight * scale;
+      const offsetX = (width - finalW) / 2;
+      const offsetY = (height - finalH) / 2 - progress * (height * 0.02);
+
+      ctx.save();
+      // Color grading & contrast boost to remove washed out blacks and enhance spotlight depth
+      ctx.filter = "contrast(1.12) brightness(1.02) saturate(1.06)";
+
+      // Draw primary frame
+      ctx.globalAlpha = 1;
+      ctx.drawImage(imgA, offsetX, offsetY, finalW, finalH);
+
+      // Smooth sub-frame crossfade interpolation for continuous 60fps/120fps motion
+      if (blend > 0.01 && imgB && imgB.complete && imgB.naturalWidth > 0) {
+        ctx.globalAlpha = blend;
+        ctx.drawImage(imgB, offsetX, offsetY, finalW, finalH);
+      }
+
+      ctx.restore();
     }
-  }, [mode, totalFrames]);
+
+    // LUXURY STUDIO VIGNETTE: masks any corner artifacts/watermarks and enriches contrast
+    const spotlightGradient = ctx.createRadialGradient(
+      width / 2,
+      height * 0.42,
+      width * 0.15,
+      width / 2,
+      height * 0.5,
+      width * 0.75
+    );
+    spotlightGradient.addColorStop(0, "rgba(8, 8, 9, 0)");
+    spotlightGradient.addColorStop(0.6, "rgba(8, 8, 9, 0.2)");
+    spotlightGradient.addColorStop(0.85, "rgba(8, 8, 9, 0.7)");
+    spotlightGradient.addColorStop(1, "#080809");
+
+    ctx.fillStyle = spotlightGradient;
+    ctx.fillRect(0, 0, width, height);
+  }, [mode, totalFrames, remasteredLoaded]);
 
   // Resize canvas according to device pixel ratio
   const updateCanvasSize = useCallback(() => {
@@ -198,9 +247,9 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     if (rect.width > 0 && rect.height > 0) {
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      renderScene(currentProgressRef.current);
+      renderCanvas(currentProgressRef.current);
     }
-  }, [renderScene]);
+  }, [renderCanvas]);
 
   useEffect(() => {
     updateCanvasSize();
@@ -208,12 +257,12 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, [updateCanvasSize]);
 
-  // Initial draw when image loaded
+  // Initial draw
   useEffect(() => {
-    if (cinematicLoaded || loadedCount > 0) {
-      renderScene(0);
+    if (loadedCount > 0 || remasteredLoaded) {
+      renderCanvas(0);
     }
-  }, [cinematicLoaded, loadedCount, renderScene]);
+  }, [loadedCount, remasteredLoaded, renderCanvas]);
 
   // Scroll listener with coalesced requestAnimationFrame updates
   useEffect(() => {
@@ -245,7 +294,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
 
         setScrollProgress(progress);
         currentProgressRef.current = progress;
-        renderScene(progress);
+        renderCanvas(progress);
       });
     };
 
@@ -257,7 +306,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [isPaused, reducedMotion, renderScene]);
+  }, [isPaused, reducedMotion, renderCanvas]);
 
   // Headlines transitions based on scrollProgress
   const initialOpacity = Math.max(0, 1 - scrollProgress / 0.24);
@@ -285,7 +334,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         {reducedMotion ? (
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${cinematicUrl})` }}
+            style={{ backgroundImage: `url(${content.posterUrl})` }}
           />
         ) : (
           <canvas
@@ -307,7 +356,11 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
                 className="w-1.5 h-1.5 rounded-full inline-block animate-pulse"
                 style={{ backgroundColor: accentColor }}
               />
-              <span>{mode === "cinematic" ? "Cinematic AI Parallax" : "44-Frame Sequence"}</span>
+              <span>
+                {mode === "remastered"
+                  ? "8K Remastered Keyframes"
+                  : `Enhanced 44-Frame Sequence`}
+              </span>
             </span>
 
             {/* Pause/Resume Motion Toggle */}
@@ -323,7 +376,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
 
           <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] text-[#90909c]">
             <Sparkles className="w-3.5 h-3.5 text-[#c6f36b]" />
-            <span>STUDIO DIRECTION</span>
+            <span>PROGRESS</span>
             <span className="text-white font-semibold">
               {Math.round(scrollProgress * 100)}%
             </span>

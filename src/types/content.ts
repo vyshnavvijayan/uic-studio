@@ -23,7 +23,7 @@ export interface HeroSectionContent {
   videoUrl?: string;
   totalFrames: number;
   frameBasePath: string;
-  mode?: "cinematic" | "frames";
+  mode?: "frames" | "remastered";
   cinematicImageUrl?: string;
 }
 

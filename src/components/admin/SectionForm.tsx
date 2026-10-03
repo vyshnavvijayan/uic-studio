@@ -105,25 +105,25 @@ export const SectionForm: React.FC<SectionFormProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => updateSection("hero", { mode: "cinematic" })}
+                onClick={() => updateSection("hero", { mode: "frames" })}
                 className={`py-2 px-3 rounded-lg text-xs font-mono text-left transition-colors border ${
-                  (hero.mode || "cinematic") === "cinematic"
+                  (hero.mode || "frames") === "frames"
                     ? "bg-[#c6f36b] text-[#080809] border-[#c6f36b] font-semibold"
                     : "bg-white/[0.02] border-white/10 text-[#90909c] hover:text-white"
                 }`}
               >
-                Cinematic AI Parallax (Ultra Smooth)
+                Enhanced 44-Frame Sequence (Sitting → Walking)
               </button>
               <button
                 type="button"
-                onClick={() => updateSection("hero", { mode: "frames" })}
+                onClick={() => updateSection("hero", { mode: "remastered" })}
                 className={`py-2 px-3 rounded-lg text-xs font-mono text-left transition-colors border ${
-                  hero.mode === "frames"
+                  hero.mode === "remastered"
                     ? "bg-[#c6f36b] text-[#080809] border-[#c6f36b] font-semibold"
                     : "bg-white/[0.02] border-white/10 text-[#90909c] hover:text-white"
                 }`}
               >
-                44-Frame Sequence Mode
+                8K Remastered Keyframes Mode
               </button>
             </div>
           </div>
