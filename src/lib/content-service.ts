@@ -233,6 +233,7 @@ export async function publishContent(content: SiteContent, expectedRevision?: nu
       localStorage.setItem(LOCAL_STORAGE_PUBLISHED_KEY, JSON.stringify(publishedContent));
       localStorage.setItem(LOCAL_STORAGE_DRAFT_KEY, JSON.stringify(publishedContent));
       window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new CustomEvent("uic:content-updated", { detail: publishedContent }));
     } catch {
       // ignore
     }

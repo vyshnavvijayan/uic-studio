@@ -41,6 +41,7 @@ function AdminEditorContent() {
   const [isDirty, setIsDirty] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [confirmPublishOpen, setConfirmPublishOpen] = useState(false);
   const [statusNotice, setStatusNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [authChecking, setAuthChecking] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -142,17 +143,19 @@ function AdminEditorContent() {
     }
   };
 
-  // Publish Changes
-  const handlePublish = async () => {
-    if (!confirm("Are you sure you want to publish these changes live to the public website?")) {
-      return;
-    }
+  // Publish Trigger
+  const handlePublishClick = () => {
+    setConfirmPublishOpen(true);
+  };
 
+  // Execute Live Publish
+  const executePublish = async () => {
     setIsPublishing(true);
     setStatusNotice(null);
 
     const res = await publishContent(content, content.revision);
     setIsPublishing(false);
+    setConfirmPublishOpen(false);
 
     if (res.success) {
       setIsDirty(false);
@@ -370,7 +373,7 @@ function AdminEditorContent() {
 
           {/* Publish Live Button */}
           <button
-            onClick={handlePublish}
+            onClick={handlePublishClick}
             disabled={isPublishing || isSavingDraft}
             className="px-4 py-1.5 rounded-xl bg-[#c6f36b] hover:bg-[#b5e656] text-[#080809] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-md"
             title="Publish changes live to public site"
@@ -464,6 +467,54 @@ function AdminEditorContent() {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal for Live Deployment */}
+      {confirmPublishOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="w-full max-w-md rounded-3xl bg-[#0e0e12] border border-white/10 p-6 shadow-2xl flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#c6f36b]/15 border border-[#c6f36b]/30 flex items-center justify-center text-[#c6f36b]">
+                <Send className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-white">Publish Live to Public Website?</h3>
+                <p className="text-xs text-[#90909c]">
+                  Deploys Revision #{(content.revision || 1) + 1} across all visitors worldwide.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#90909c] leading-relaxed">
+              All active edits across your sections, branding, and typography will become immediately visible on the live domain.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/[0.08]">
+              <button
+                type="button"
+                onClick={() => setConfirmPublishOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-mono text-[#90909c] hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={executePublish}
+                disabled={isPublishing}
+                className="px-5 py-2 rounded-xl bg-[#c6f36b] hover:bg-[#b5e656] text-[#080809] text-xs font-semibold font-mono uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg"
+              >
+                {isPublishing ? (
+                  <span>Publishing...</span>
+                ) : (
+                  <>
+                    <span>Confirm &amp; Deploy Live</span>
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

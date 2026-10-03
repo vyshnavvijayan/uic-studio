@@ -16,14 +16,28 @@ export const ClientApp: React.FC<ClientAppProps> = ({ initialContent }) => {
   const [content, setContent] = useState<SiteContent>(initialContent);
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
 
-  // Sync if updated in local storage via CMS
+  // Sync on initial mount AND on storage / published events
   useEffect(() => {
-    const handleStorageChange = () => {
+    // 1. Immediately sync with latest published content on browser mount
+    getPublishedContent().then((latest) => {
+      if (latest && latest.revision !== initialContent.revision) {
+        setContent(latest);
+      }
+    });
+
+    // 2. Listen for storage events (from other tabs) and custom content update events (same tab)
+    const handleSync = () => {
       getPublishedContent().then(setContent);
     };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+
+    window.addEventListener("storage", handleSync);
+    window.addEventListener("uic:content-updated", handleSync);
+
+    return () => {
+      window.removeEventListener("storage", handleSync);
+      window.removeEventListener("uic:content-updated", handleSync);
+    };
+  }, [initialContent.revision]);
 
   return (
     <div className="min-h-screen bg-[#080809] text-[#f5f5f7] flex flex-col selection:bg-[#c6f36b] selection:text-[#080809]">
