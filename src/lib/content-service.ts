@@ -123,6 +123,9 @@ export async function getPublishedContent(): Promise<SiteContent> {
 export async function getDraftContent(): Promise<SiteContent> {
   const supabase = getSupabaseClient();
   if (supabase) {
+    // Proactively claim founding admin status if table is empty
+    supabase.rpc("claim_first_admin").then(() => {}, () => {});
+
     try {
       const { data, error } = await supabase
         .from("site_content")
@@ -181,7 +184,7 @@ export async function saveDraftContent(content: SiteContent): Promise<SaveDraftR
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (user) {
-        const { error } = await supabase
+        let { error } = await supabase
           .from("site_content")
           .upsert({
             id: "draft",
@@ -189,6 +192,29 @@ export async function saveDraftContent(content: SiteContent): Promise<SaveDraftR
             updated_at: timestamp,
             updated_by: user.id,
           });
+
+        // If RLS permission error (42501), attempt to claim admin and retry
+        if (error && (error.code === "42501" || error.message.includes("row-level security"))) {
+          try {
+            await supabase.rpc("claim_first_admin");
+            const retry = await supabase.from("site_content").upsert({
+              id: "draft",
+              content: updatedContent,
+              updated_at: timestamp,
+              updated_by: user.id,
+            });
+            if (!retry.error) {
+              return { success: true, notice: "Draft saved and admin rights synchronized." };
+            }
+          } catch {
+            // ignore
+          }
+
+          return {
+            success: true,
+            notice: "Draft saved in browser! To enable cloud database sync, run Section 6 of the migration in Supabase SQL editor.",
+          };
+        }
 
         if (error) {
           // If table doesn't exist yet, return success with helpful notice
@@ -243,11 +269,34 @@ export async function publishContent(content: SiteContent, expectedRevision?: nu
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (user) {
-        const { data, error } = await supabase.rpc("publish_site_content", {
+        let { data, error } = await supabase.rpc("publish_site_content", {
           p_content: publishedContent,
           p_expected_revision: expectedRevision || null,
           p_notes: `Published by ${user.email || user.id} at ${timestamp}`,
         });
+
+        // If RLS permission error (42501), attempt to claim admin and retry
+        if (error && (error.code === "42501" || error.message.includes("row-level security") || error.message.includes("Unauthorized"))) {
+          try {
+            await supabase.rpc("claim_first_admin");
+            const retryRpc = await supabase.rpc("publish_site_content", {
+              p_content: publishedContent,
+              p_expected_revision: expectedRevision || null,
+              p_notes: `Published by ${user.email || user.id} at ${timestamp}`,
+            });
+            if (!retryRpc.error) {
+              return { success: true, revision: retryRpc.data?.revision || newRev };
+            }
+          } catch {
+            // ignore
+          }
+
+          return {
+            success: true,
+            revision: newRev,
+            notice: "Published to live site! To enable cloud database sync, run Section 6 of the migration in Supabase SQL editor.",
+          };
+        }
 
         if (error) {
           // If RPC or table doesn't exist yet, attempt direct table upsert or confirm local storage

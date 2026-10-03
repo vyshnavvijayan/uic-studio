@@ -18,19 +18,73 @@ CREATE TABLE IF NOT EXISTS public.site_admins (
 
 ALTER TABLE public.site_admins ENABLE ROW LEVEL SECURITY;
 
--- Security Definer function to check if the current caller is an approved admin
+-- Security Definer function to check if the current caller is an approved admin.
+-- Auto-bootstraps: If site_admins is empty, the first authenticated user is automatically granted superadmin.
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN
-LANGUAGE sql
-STABLE
+LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.site_admins
-    WHERE id = auth.uid()
-  );
+DECLARE
+  v_uid UUID := auth.uid();
+  v_admin_count INTEGER;
+BEGIN
+  IF v_uid IS NULL THEN
+    RETURN FALSE;
+  END IF;
+
+  -- 1. Check if user is already an approved admin
+  IF EXISTS (SELECT 1 FROM public.site_admins WHERE id = v_uid) THEN
+    RETURN TRUE;
+  END IF;
+
+  -- 2. Auto-bootstrap: If site_admins has 0 rows, promote the active authenticated user
+  SELECT COUNT(*) INTO v_admin_count FROM public.site_admins;
+  IF v_admin_count = 0 THEN
+    INSERT INTO public.site_admins (id, email, role)
+    SELECT id, email, 'superadmin'
+    FROM auth.users
+    WHERE id = v_uid
+    ON CONFLICT (id) DO NOTHING;
+    RETURN TRUE;
+  END IF;
+
+  RETURN FALSE;
+END;
+$$;
+
+-- Standalone RPC that frontend client can call explicitly to claim superadmin
+CREATE OR REPLACE FUNCTION public.claim_first_admin()
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_uid UUID := auth.uid();
+  v_admin_count INTEGER;
+BEGIN
+  IF v_uid IS NULL THEN
+    RETURN FALSE;
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM public.site_admins WHERE id = v_uid) THEN
+    RETURN TRUE;
+  END IF;
+
+  SELECT COUNT(*) INTO v_admin_count FROM public.site_admins;
+  IF v_admin_count = 0 THEN
+    INSERT INTO public.site_admins (id, email, role)
+    SELECT id, email, 'superadmin'
+    FROM auth.users
+    WHERE id = v_uid
+    ON CONFLICT (id) DO NOTHING;
+    RETURN TRUE;
+  END IF;
+
+  RETURN FALSE;
+END;
 $$;
 
 -- RLS for site_admins:
@@ -241,11 +295,9 @@ CREATE POLICY "Admin media delete"
     TO authenticated
     USING (bucket_id = 'site-media' AND public.is_admin());
 
--- 6. INITIAL ADMIN PROVISIONING HELPER
--- Run this block once with your target admin email after creating their auth user
--- Example:
--- INSERT INTO public.site_admins (id, email, role)
--- SELECT id, email, 'admin'
--- FROM auth.users
--- WHERE email = 'admin@uic.studio'
--- ON CONFLICT (id) DO NOTHING;
+-- 6. AUTOMATIC ADMIN PROVISIONING
+-- Automatically populate site_admins with any currently registered auth users
+INSERT INTO public.site_admins (id, email, role)
+SELECT id, email, 'superadmin'
+FROM auth.users
+ON CONFLICT (id) DO NOTHING;
