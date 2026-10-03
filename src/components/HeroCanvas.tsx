@@ -24,10 +24,11 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
   const [reducedMotion, setReducedMotion] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Engine mode: "frames" (enhanced original 44-frame walk sequence) or "remastered" (8K staged)
+  // Engine mode: "frames" (Enhanced 44-Frame Sequence) or "remastered"
   const mode = content.mode || "frames";
   const totalFrames = content.totalFrames || 44;
   const currentProgressRef = useRef(0);
+  const currentFrameRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
   const isIntersectingRef = useRef(true);
 
@@ -42,7 +43,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     }
   }, []);
 
-  // Preload all 44 original frames (sitting in chair -> rising -> walking forward)
+  // Preload all 44 ultra-clarity frames
   useEffect(() => {
     let active = true;
     const loadedImages: HTMLImageElement[] = [];
@@ -104,7 +105,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     };
   }, []);
 
-  // Draw enhanced frame on canvas
+  // High-performance, razor-sharp canvas renderer
   const renderCanvas = useCallback((progress: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -114,34 +115,21 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     const width = canvas.width;
     const height = canvas.height;
 
-    // Enable high-quality bicubic image smoothing
+    // High precision image smoothing
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
 
-    // Set pitch black background
-    ctx.fillStyle = "#080809";
-    ctx.fillRect(0, 0, width, height);
-
     if (mode === "remastered" && remasteredLoaded && remasteredImagesRef.current.length === 3) {
-      // 8K Remastered 3-Stage Cinematic Progression (Sitting -> Rising -> Walking)
+      // 8K Remastered 3-Stage Progression
       const stages = remasteredImagesRef.current;
-      let imgA = stages[0];
-      let imgB = stages[1];
-      let blend = 0;
-
-      if (progress < 0.45) {
-        // Stage 1 to Stage 2: Sitting to Rising
-        imgA = stages[0];
-        imgB = stages[1];
-        blend = Math.max(0, Math.min(1, (progress - 0.15) / 0.3));
-      } else {
-        // Stage 2 to Stage 3: Rising to Walking forward
-        imgA = stages[1];
-        imgB = stages[2];
-        blend = Math.max(0, Math.min(1, (progress - 0.45) / 0.4));
+      let img = stages[0];
+      if (progress > 0.65) {
+        img = stages[2];
+      } else if (progress > 0.3) {
+        img = stages[1];
       }
 
-      const imgRatio = imgA.naturalWidth / imgA.naturalHeight;
+      const imgRatio = img.naturalWidth / img.naturalHeight;
       const canvasRatio = width / height;
 
       let drawWidth = width;
@@ -152,86 +140,55 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         drawWidth = height * imgRatio;
       }
 
-      // Smooth camera dolly push
-      const scale = 1.0 + progress * 0.15;
-      const finalW = drawWidth * scale;
-      const finalH = drawHeight * scale;
-      const offsetX = (width - finalW) / 2;
-      const offsetY = (height - finalH) / 2 - progress * (height * 0.03);
+      const offsetX = (width - drawWidth) / 2;
+      const offsetY = (height - drawHeight) / 2;
 
-      ctx.save();
-      ctx.filter = "contrast(1.08) brightness(1.02) saturate(1.04)";
-      ctx.globalAlpha = 1;
-      ctx.drawImage(imgA, offsetX, offsetY, finalW, finalH);
-
-      if (blend > 0) {
-        ctx.globalAlpha = blend;
-        ctx.drawImage(imgB, offsetX, offsetY, finalW, finalH);
-      }
-      ctx.restore();
+      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     } else {
-      // Enhanced 44-Frame Sequence (sitting in chair -> rising -> walking forward)
+      // Enhanced 44-Frame Sequence (Sitting -> Standing -> Walking)
       const images = imagesRef.current;
       if (images.length === 0) return;
 
       const total = totalFrames - 1;
-      const rawFrame = progress * total;
-      const frameA = Math.min(total, Math.max(0, Math.floor(rawFrame)));
-      const frameB = Math.min(total, frameA + 1);
-      const blend = rawFrame - frameA;
+      // Discrete frame snapping with ZERO double-vision ghosting
+      const targetIndex = Math.min(total, Math.max(0, Math.round(progress * total)));
+      currentFrameRef.current = targetIndex;
 
-      const imgA = images[frameA] || images[0];
-      const imgB = images[frameB] || imgA;
+      const img = images[targetIndex] || images[0];
+      if (!img || !img.complete || img.naturalWidth === 0) return;
 
-      if (!imgA || !imgA.complete || imgA.naturalWidth === 0) return;
-
-      const imgRatio = imgA.naturalWidth / imgA.naturalHeight;
+      const imgRatio = img.naturalWidth / img.naturalHeight;
       const canvasRatio = width / height;
 
       let drawWidth = width;
       let drawHeight = height;
+      let offsetX = 0;
+      let offsetY = 0;
+
       if (canvasRatio > imgRatio) {
         drawHeight = width / imgRatio;
+        offsetY = (height - drawHeight) / 2;
       } else {
         drawWidth = height * imgRatio;
+        offsetX = (width - drawWidth) / 2;
       }
 
-      // Smooth subtle camera tracking as person stands and walks forward
-      const scale = 1.0 + progress * 0.12;
-      const finalW = drawWidth * scale;
-      const finalH = drawHeight * scale;
-      const offsetX = (width - finalW) / 2;
-      const offsetY = (height - finalH) / 2 - progress * (height * 0.02);
-
-      ctx.save();
-      // Color grading & contrast boost to remove washed out blacks and enhance spotlight depth
-      ctx.filter = "contrast(1.12) brightness(1.02) saturate(1.06)";
-
-      // Draw primary frame
-      ctx.globalAlpha = 1;
-      ctx.drawImage(imgA, offsetX, offsetY, finalW, finalH);
-
-      // Smooth sub-frame crossfade interpolation for continuous 60fps/120fps motion
-      if (blend > 0.01 && imgB && imgB.complete && imgB.naturalWidth > 0) {
-        ctx.globalAlpha = blend;
-        ctx.drawImage(imgB, offsetX, offsetY, finalW, finalH);
-      }
-
-      ctx.restore();
+      // Stable, clean 1:1 hardware blit (No artificial scaling conflict)
+      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     }
 
-    // LUXURY STUDIO VIGNETTE: masks any corner artifacts/watermarks and enriches contrast
+    // Studio vignette: blends edges cleanly into the dark background
     const spotlightGradient = ctx.createRadialGradient(
       width / 2,
       height * 0.42,
-      width * 0.15,
+      width * 0.18,
       width / 2,
       height * 0.5,
-      width * 0.75
+      width * 0.78
     );
     spotlightGradient.addColorStop(0, "rgba(8, 8, 9, 0)");
-    spotlightGradient.addColorStop(0.6, "rgba(8, 8, 9, 0.2)");
-    spotlightGradient.addColorStop(0.85, "rgba(8, 8, 9, 0.7)");
+    spotlightGradient.addColorStop(0.65, "rgba(8, 8, 9, 0.15)");
+    spotlightGradient.addColorStop(0.88, "rgba(8, 8, 9, 0.75)");
     spotlightGradient.addColorStop(1, "#080809");
 
     ctx.fillStyle = spotlightGradient;
@@ -356,11 +313,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
                 className="w-1.5 h-1.5 rounded-full inline-block animate-pulse"
                 style={{ backgroundColor: accentColor }}
               />
-              <span>
-                {mode === "remastered"
-                  ? "8K Remastered Keyframes"
-                  : `Enhanced 44-Frame Sequence`}
-              </span>
+              <span>1080p Cinema Sequence</span>
             </span>
 
             {/* Pause/Resume Motion Toggle */}
@@ -376,9 +329,9 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
 
           <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] text-[#90909c]">
             <Sparkles className="w-3.5 h-3.5 text-[#c6f36b]" />
-            <span>PROGRESS</span>
+            <span>FRAME</span>
             <span className="text-white font-semibold">
-              {Math.round(scrollProgress * 100)}%
+              {String(currentFrameRef.current + 1).padStart(2, "0")} / {totalFrames}
             </span>
           </div>
         </div>
