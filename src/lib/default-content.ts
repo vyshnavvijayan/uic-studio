@@ -3,6 +3,8 @@ import { SiteContent } from "@/types/content";
 export const defaultSiteContent: SiteContent = {
   brand: {
     wordmark: "UIC STUDIO",
+    logoUrl: "/logo.png",
+    showWordmarkWithLogo: true,
     accentColor: "#c6f36b",
     contactEmail: "design@uic.studio",
     navItems: [

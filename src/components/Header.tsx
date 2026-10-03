@@ -54,20 +54,37 @@ export const Header: React.FC<HeaderProps> = ({
       } transition-all duration-300`}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 flex items-center justify-between">
-        {/* Brand Wordmark */}
+        {/* Brand Logo & Wordmark */}
         <Link
           href="#hero"
           onClick={(e) => handleNavClick(e, "#hero")}
-          className="group flex items-center gap-2 tracking-tighter font-semibold text-lg sm:text-xl text-[#f5f5f7] hover:text-white transition-colors"
+          className="group flex items-center gap-2.5 tracking-tighter font-semibold text-lg sm:text-xl text-[#f5f5f7] hover:text-white transition-colors"
         >
-          <span className="font-mono text-xs tracking-widest text-[#90909c] group-hover:text-[#c6f36b] transition-colors">
-            [
-          </span>
-          <span className="tracking-wider">{brand.wordmark || "UIC STUDIO"}</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#c6f36b] inline-block animate-pulse" />
-          <span className="font-mono text-xs tracking-widest text-[#90909c] group-hover:text-[#c6f36b] transition-colors">
-            ]
-          </span>
+          {brand.logoUrl ? (
+            <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg overflow-hidden bg-white/[0.04] p-1 border border-white/10 group-hover:border-[#c6f36b]/40 transition-colors flex-shrink-0">
+              <img
+                src={brand.logoUrl}
+                alt={brand.wordmark || "Brand Logo"}
+                className="w-full h-full object-contain"
+              />
+            </div>
+          ) : null}
+
+          {(brand.showWordmarkWithLogo ?? true) && (
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono text-xs tracking-widest text-[#90909c] group-hover:text-[#c6f36b] transition-colors">
+                [
+              </span>
+              <span className="tracking-wider">{brand.wordmark || "UIC STUDIO"}</span>
+              <span
+                className="w-1.5 h-1.5 rounded-full inline-block animate-pulse"
+                style={{ backgroundColor: brand.accentColor || "#c6f36b" }}
+              />
+              <span className="font-mono text-xs tracking-widest text-[#90909c] group-hover:text-[#c6f36b] transition-colors">
+                ]
+              </span>
+            </div>
+          )}
         </Link>
 
         {/* Desktop Navigation */}

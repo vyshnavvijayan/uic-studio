@@ -178,6 +178,8 @@ export interface FooterSectionContent {
 
 export interface BrandSettings {
   wordmark: string;
+  logoUrl?: string;
+  showWordmarkWithLogo?: boolean;
   accentColor: string; // e.g. #c6f36b
   contactEmail: string;
   navItems: NavItem[];

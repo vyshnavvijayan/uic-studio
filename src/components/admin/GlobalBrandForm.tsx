@@ -3,7 +3,7 @@
 import React from "react";
 import { BrandSettings, SeoMetadata } from "@/types/content";
 import { MediaUploader } from "@/components/admin/MediaUploader";
-import { Palette, Mail, Link as LinkIcon, Plus, Trash2 } from "lucide-react";
+import { Palette, Mail, Link as LinkIcon, Plus, Trash2, RotateCcw, Image as ImageIcon } from "lucide-react";
 
 interface GlobalBrandFormProps {
   brand: BrandSettings;
@@ -91,8 +91,74 @@ export const GlobalBrandForm: React.FC<GlobalBrandFormProps> = ({
       <div>
         <h2 className="text-xl font-bold text-white">Brand Architecture & Settings</h2>
         <p className="text-xs text-[#90909c] mt-1">
-          Customize your wordmark, global accent color, primary contact routing, and navigation.
+          Customize your logo, wordmark, global accent color, primary contact routing, and navigation.
         </p>
+      </div>
+
+      {/* Brand Logo & Emblem Section */}
+      <div className="p-5 rounded-2xl bg-[#121215] border border-white/[0.08] flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ImageIcon className="w-4 h-4 text-[#c6f36b]" />
+            <span className="text-xs font-mono uppercase tracking-wider text-white">
+              Brand Logo / Icon Emblem
+            </span>
+          </div>
+
+          {brand.logoUrl && brand.logoUrl !== "/logo.png" && (
+            <button
+              onClick={() => onChangeBrand({ ...brand, logoUrl: "/logo.png" })}
+              className="text-[11px] font-mono text-[#90909c] hover:text-white flex items-center gap-1 transition-colors"
+              title="Reset to default UIC studio logo"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset to default</span>
+            </button>
+          )}
+        </div>
+
+        <MediaUploader
+          label="Upload Logo (PNG, SVG, WebP with transparency recommended)"
+          currentUrl={brand.logoUrl || "/logo.png"}
+          onUrlChange={(url) => onChangeBrand({ ...brand, logoUrl: url })}
+        />
+
+        {/* Live Logo Preview Box */}
+        <div className="pt-3 border-t border-white/[0.06] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono uppercase text-[#585863]">
+              Header Preview:
+            </span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#080809] border border-white/10">
+              {brand.logoUrl ? (
+                <div className="w-6 h-6 flex items-center justify-center rounded overflow-hidden bg-white/[0.05] p-0.5">
+                  <img
+                    src={brand.logoUrl}
+                    alt="Logo preview"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : null}
+              {(brand.showWordmarkWithLogo ?? true) && (
+                <span className="font-semibold text-xs tracking-wider text-[#f5f5f7]">
+                  {brand.wordmark || "UIC STUDIO"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer text-xs font-mono text-[#90909c] hover:text-white">
+            <input
+              type="checkbox"
+              checked={brand.showWordmarkWithLogo ?? true}
+              onChange={(e) =>
+                onChangeBrand({ ...brand, showWordmarkWithLogo: e.target.checked })
+              }
+              className="rounded accent-[#c6f36b] cursor-pointer"
+            />
+            <span>Show Wordmark text with Logo</span>
+          </label>
+        </div>
       </div>
 
       {/* Wordmark and Primary Email */}

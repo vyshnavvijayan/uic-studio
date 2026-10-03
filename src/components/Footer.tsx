@@ -25,8 +25,17 @@ export const Footer: React.FC<FooterProps> = ({
           <div className="md:col-span-5 flex flex-col gap-4">
             <Link
               href="#hero"
-              className="inline-flex items-center gap-2 text-xl font-bold tracking-tight text-white hover:text-[#c6f36b] transition-colors"
+              className="inline-flex items-center gap-3 text-xl font-bold tracking-tight text-white hover:text-[#c6f36b] transition-colors"
             >
+              {brand.logoUrl && (
+                <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/[0.04] p-1 border border-white/10 flex-shrink-0 flex items-center justify-center">
+                  <img
+                    src={brand.logoUrl}
+                    alt={brand.wordmark || "Brand Logo"}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              )}
               <span>{content.wordmark || brand.wordmark}</span>
               <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: accentColor }} />
             </Link>
