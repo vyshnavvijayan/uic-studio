@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { HeroSectionContent } from "@/types/content";
-import { Play, Pause, ChevronDown, Sparkles } from "lucide-react";
+import { ChevronDown, Sparkles } from "lucide-react";
 
 interface HeroCanvasProps {
   content: HeroSectionContent;
@@ -20,7 +20,6 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
 
   const [loadedCount, setLoadedCount] = useState(0);
   const [remasteredLoaded, setRemasteredLoaded] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -235,7 +234,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     observer.observe(container);
 
     const onScroll = () => {
-      if (!isIntersectingRef.current || isPaused || reducedMotion) return;
+      if (!isIntersectingRef.current || reducedMotion) return;
 
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
@@ -263,7 +262,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [isPaused, reducedMotion, renderCanvas]);
+  }, [reducedMotion, renderCanvas]);
 
   // Headlines transitions based on scrollProgress
   const initialOpacity = Math.max(0, 1 - scrollProgress / 0.24);
@@ -305,7 +304,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#080809] to-transparent z-10 opacity-70" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#080809] via-[#080809]/80 to-transparent z-10" />
 
-        {/* TOP STATUS BAR: Motion Control & Progress */}
+        {/* TOP STATUS BAR: Progress */}
         <div className="relative z-20 pt-24 px-6 sm:px-12 flex items-center justify-between pointer-events-none">
           <div className="flex items-center gap-3 pointer-events-auto">
             <span className="text-[10px] uppercase font-mono tracking-widest text-[#90909c] bg-[#161619]/80 backdrop-blur border border-white/10 px-3 py-1 rounded-full flex items-center gap-2">
@@ -315,16 +314,6 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
               />
               <span>1080p Cinema Sequence</span>
             </span>
-
-            {/* Pause/Resume Motion Toggle */}
-            <button
-              onClick={() => setIsPaused(!isPaused)}
-              className="p-1.5 rounded-full bg-[#161619]/80 backdrop-blur border border-white/10 hover:border-white/20 text-[#90909c] hover:text-white transition-colors"
-              aria-label={isPaused ? "Resume scroll sequence" : "Pause scroll sequence"}
-              title={isPaused ? "Resume motion" : "Pause motion"}
-            >
-              {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-            </button>
           </div>
 
           <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] text-[#90909c]">
