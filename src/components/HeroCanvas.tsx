@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { HeroSectionContent } from "@/types/content";
-import { Play, Pause, ChevronDown } from "lucide-react";
+import { Play, Pause, ChevronDown, Sparkles } from "lucide-react";
 
 interface HeroCanvasProps {
   content: HeroSectionContent;
@@ -16,16 +16,22 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
+  const cinematicImgRef = useRef<HTMLImageElement | null>(null);
+
   const [loadedCount, setLoadedCount] = useState(0);
+  const [cinematicLoaded, setCinematicLoaded] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [canvasReady, setCanvasReady] = useState(false);
 
+  const mode = content.mode || "cinematic";
   const totalFrames = content.totalFrames || 44;
   const currentFrameRef = useRef(0);
+  const currentProgressRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
   const isIntersectingRef = useRef(true);
+
+  const cinematicUrl = content.cinematicImageUrl || "/images/hero-cinematic.jpg";
 
   // Check prefers-reduced-motion
   useEffect(() => {
@@ -38,7 +44,22 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     }
   }, []);
 
-  // Preload all 44 frames
+  // Preload single high-res cinematic image
+  useEffect(() => {
+    let active = true;
+    const img = new Image();
+    img.src = cinematicUrl;
+    img.onload = () => {
+      if (!active) return;
+      cinematicImgRef.current = img;
+      setCinematicLoaded(true);
+    };
+    return () => {
+      active = false;
+    };
+  }, [cinematicUrl]);
+
+  // Preload all 44 frames for frame mode
   useEffect(() => {
     let active = true;
     const loadedImages: HTMLImageElement[] = [];
@@ -52,9 +73,6 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         if (!active) return;
         count++;
         setLoadedCount(count);
-        if (count === totalFrames) {
-          setCanvasReady(true);
-        }
       };
       img.onerror = () => {
         if (!active) return;
@@ -71,56 +89,107 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     };
   }, [totalFrames, content.frameBasePath]);
 
-  // Draw frame on canvas with object-fit: cover logic
-  const renderFrame = useCallback((frameIndex: number) => {
+  // Render scene on canvas (supports both cinematic dolly zoom and frame sequence)
+  const renderScene = useCallback((progress: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const img = imagesRef.current[frameIndex] || imagesRef.current[0];
-    if (!img || !img.complete || img.naturalWidth === 0) return;
-
-    // Get display size
     const width = canvas.width;
     const height = canvas.height;
 
-    // Calculate aspect ratio cover
-    const imgRatio = img.naturalWidth / img.naturalHeight;
-    const canvasRatio = width / height;
-
-    let drawWidth = width;
-    let drawHeight = height;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    if (canvasRatio > imgRatio) {
-      drawHeight = width / imgRatio;
-      offsetY = (height - drawHeight) / 2;
-    } else {
-      drawWidth = height * imgRatio;
-      offsetX = (width - drawWidth) / 2;
-    }
-
     ctx.clearRect(0, 0, width, height);
-    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 
-    // Subtle luxury vignette gradient overlay
-    const gradient = ctx.createRadialGradient(
-      width / 2,
-      height / 2,
-      width * 0.18,
-      width / 2,
-      height / 2,
-      width * 0.75
-    );
-    gradient.addColorStop(0, "rgba(8, 8, 9, 0)");
-    gradient.addColorStop(1, "rgba(8, 8, 9, 0.75)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
-  }, []);
+    if (mode === "cinematic" && cinematicImgRef.current && cinematicImgRef.current.complete) {
+      const img = cinematicImgRef.current;
+      const imgRatio = img.naturalWidth / img.naturalHeight;
+      const canvasRatio = width / height;
 
-  // Resize canvas to match display pixel ratio
+      // Base cover dimensions
+      let baseWidth = width;
+      let baseHeight = height;
+      if (canvasRatio > imgRatio) {
+        baseHeight = width / imgRatio;
+      } else {
+        baseWidth = height * imgRatio;
+      }
+
+      // Smooth camera dolly push on scroll: scale expands from 1.00 to 1.18
+      const scale = 1.0 + progress * 0.18;
+      const drawWidth = baseWidth * scale;
+      const drawHeight = baseHeight * scale;
+
+      // Subtle upward pan as camera pushes forward
+      const panY = -progress * (height * 0.04);
+
+      const offsetX = (width - drawWidth) / 2;
+      const offsetY = (height - drawHeight) / 2 + panY;
+
+      ctx.save();
+      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+      // Dynamic breathing spotlight and luxury chiaroscuro gradient
+      const spotlightRadius = width * (0.28 + progress * 0.12);
+      const gradient = ctx.createRadialGradient(
+        width / 2,
+        height * 0.35 + panY,
+        spotlightRadius * 0.2,
+        width / 2,
+        height * 0.45,
+        spotlightRadius * 2.2
+      );
+      gradient.addColorStop(0, "rgba(8, 8, 9, 0)");
+      gradient.addColorStop(0.65, "rgba(8, 8, 9, 0.45)");
+      gradient.addColorStop(1, "rgba(8, 8, 9, 0.88)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.restore();
+    } else {
+      // 44-frame sequence fallback
+      const targetFrame = Math.min(
+        totalFrames - 1,
+        Math.floor(progress * totalFrames)
+      );
+      const img = imagesRef.current[targetFrame] || imagesRef.current[0];
+      if (!img || !img.complete || img.naturalWidth === 0) return;
+
+      const imgRatio = img.naturalWidth / img.naturalHeight;
+      const canvasRatio = width / height;
+
+      let drawWidth = width;
+      let drawHeight = height;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (canvasRatio > imgRatio) {
+        drawHeight = width / imgRatio;
+        offsetY = (height - drawHeight) / 2;
+      } else {
+        drawWidth = height * imgRatio;
+        offsetX = (width - drawWidth) / 2;
+      }
+
+      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+      // Vignette
+      const gradient = ctx.createRadialGradient(
+        width / 2,
+        height / 2,
+        width * 0.18,
+        width / 2,
+        height / 2,
+        width * 0.75
+      );
+      gradient.addColorStop(0, "rgba(8, 8, 9, 0)");
+      gradient.addColorStop(1, "rgba(8, 8, 9, 0.75)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    }
+  }, [mode, totalFrames]);
+
+  // Resize canvas according to device pixel ratio
   const updateCanvasSize = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -129,9 +198,9 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     if (rect.width > 0 && rect.height > 0) {
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      renderFrame(currentFrameRef.current);
+      renderScene(currentProgressRef.current);
     }
-  }, [renderFrame]);
+  }, [renderScene]);
 
   useEffect(() => {
     updateCanvasSize();
@@ -139,19 +208,18 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, [updateCanvasSize]);
 
-  // Initial draw when first frame is loaded
+  // Initial draw when image loaded
   useEffect(() => {
-    if (loadedCount > 0) {
-      renderFrame(0);
+    if (cinematicLoaded || loadedCount > 0) {
+      renderScene(0);
     }
-  }, [loadedCount, renderFrame]);
+  }, [cinematicLoaded, loadedCount, renderScene]);
 
   // Scroll listener with coalesced requestAnimationFrame updates
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    // Observe container intersection to stop listening when scrolled past
     const observer = new IntersectionObserver(
       (entries) => {
         isIntersectingRef.current = entries[0]?.isIntersecting ?? false;
@@ -172,21 +240,12 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         const totalScrollable = rect.height - window.innerHeight;
         if (totalScrollable <= 0) return;
 
-        // Current progress between 0 and 1
         const rawProgress = -rect.top / totalScrollable;
         const progress = Math.max(0, Math.min(1, rawProgress));
+
         setScrollProgress(progress);
-
-        // Calculate target frame
-        const targetFrame = Math.min(
-          totalFrames - 1,
-          Math.floor(progress * totalFrames)
-        );
-
-        if (targetFrame !== currentFrameRef.current) {
-          currentFrameRef.current = targetFrame;
-          renderFrame(targetFrame);
-        }
+        currentProgressRef.current = progress;
+        renderScene(progress);
       });
     };
 
@@ -198,14 +257,12 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [isPaused, reducedMotion, totalFrames, renderFrame]);
+  }, [isPaused, reducedMotion, renderScene]);
 
-  // Opacity and transform calculations for headlines based on scrollProgress
-  // Initial headline: visible from 0 to 0.25, then fades and moves up
-  const initialOpacity = Math.max(0, 1 - scrollProgress / 0.22);
-  const initialTranslateY = -scrollProgress * 60;
+  // Headlines transitions based on scrollProgress
+  const initialOpacity = Math.max(0, 1 - scrollProgress / 0.24);
+  const initialTranslateY = -scrollProgress * 70;
 
-  // Closing headline: appears between 0.70 and 0.95
   const closingOpacity =
     scrollProgress < 0.65
       ? 0
@@ -213,7 +270,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
       ? Math.max(0, 1 - (scrollProgress - 0.95) * 15)
       : Math.min(1, (scrollProgress - 0.65) / 0.15);
 
-  const closingTranslateY = Math.max(0, 30 - (scrollProgress - 0.65) * 100);
+  const closingTranslateY = Math.max(0, 35 - (scrollProgress - 0.65) * 110);
 
   return (
     <section
@@ -228,7 +285,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         {reducedMotion ? (
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${content.posterUrl})` }}
+            style={{ backgroundImage: `url(${cinematicUrl})` }}
           />
         ) : (
           <canvas
@@ -239,18 +296,18 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
         )}
 
         {/* Ambient Top & Bottom Vignettes */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#080809] to-transparent z-10 opacity-70" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#080809] via-[#080809]/80 to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#080809] to-transparent z-10 opacity-70" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#080809] via-[#080809]/80 to-transparent z-10" />
 
         {/* TOP STATUS BAR: Motion Control & Progress */}
         <div className="relative z-20 pt-24 px-6 sm:px-12 flex items-center justify-between pointer-events-none">
           <div className="flex items-center gap-3 pointer-events-auto">
             <span className="text-[10px] uppercase font-mono tracking-widest text-[#90909c] bg-[#161619]/80 backdrop-blur border border-white/10 px-3 py-1 rounded-full flex items-center gap-2">
               <span
-                className="w-1.5 h-1.5 rounded-full inline-block"
+                className="w-1.5 h-1.5 rounded-full inline-block animate-pulse"
                 style={{ backgroundColor: accentColor }}
               />
-              Cinematic Sequence
+              <span>{mode === "cinematic" ? "Cinematic AI Parallax" : "44-Frame Sequence"}</span>
             </span>
 
             {/* Pause/Resume Motion Toggle */}
@@ -265,18 +322,17 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
           </div>
 
           <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] text-[#90909c]">
-            <span>FRAME</span>
+            <Sparkles className="w-3.5 h-3.5 text-[#c6f36b]" />
+            <span>STUDIO DIRECTION</span>
             <span className="text-white font-semibold">
-              {String(currentFrameRef.current + 1).padStart(2, "0")}
+              {Math.round(scrollProgress * 100)}%
             </span>
-            <span>/</span>
-            <span>{totalFrames}</span>
           </div>
         </div>
 
         {/* CENTER CONTENT: Dynamic Editorial Headlines */}
         <div className="relative z-20 px-6 sm:px-12 max-w-6xl mx-auto w-full my-auto flex flex-col justify-center">
-          {/* 1. Initial Opening Headline (Fades on scroll) */}
+          {/* 1. Initial Opening Headline (Fades smoothly on scroll) */}
           <div
             className="transition-opacity duration-100 ease-out will-change-transform"
             style={{

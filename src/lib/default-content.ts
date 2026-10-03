@@ -48,9 +48,11 @@ export const defaultSiteContent: SiteContent = {
       subtitle: "Distinctive websites. Remarkable identities. Connections that start with a tap.",
       closingHeadline: "More than a first impression.",
       exploreText: "Explore the studio",
-      posterUrl: "/images/heropage/0001.webp",
+      posterUrl: "/images/hero-cinematic.jpg",
       totalFrames: 44,
       frameBasePath: "/images/heropage",
+      mode: "cinematic",
+      cinematicImageUrl: "/images/hero-cinematic.jpg",
     },
     studioIntro: {
       id: "studioIntro",

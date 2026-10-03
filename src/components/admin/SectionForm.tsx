@@ -97,10 +97,41 @@ export const SectionForm: React.FC<SectionFormProps> = ({
             />
           </div>
 
+          {/* Playback Mode Switcher */}
+          <div className="p-4 rounded-xl bg-[#121215] border border-white/10 flex flex-col gap-2">
+            <label className="text-[11px] font-mono uppercase tracking-wider text-white block">
+              Hero Rendering Engine
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => updateSection("hero", { mode: "cinematic" })}
+                className={`py-2 px-3 rounded-lg text-xs font-mono text-left transition-colors border ${
+                  (hero.mode || "cinematic") === "cinematic"
+                    ? "bg-[#c6f36b] text-[#080809] border-[#c6f36b] font-semibold"
+                    : "bg-white/[0.02] border-white/10 text-[#90909c] hover:text-white"
+                }`}
+              >
+                Cinematic AI Parallax (Ultra Smooth)
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSection("hero", { mode: "frames" })}
+                className={`py-2 px-3 rounded-lg text-xs font-mono text-left transition-colors border ${
+                  hero.mode === "frames"
+                    ? "bg-[#c6f36b] text-[#080809] border-[#c6f36b] font-semibold"
+                    : "bg-white/[0.02] border-white/10 text-[#90909c] hover:text-white"
+                }`}
+              >
+                44-Frame Sequence Mode
+              </button>
+            </div>
+          </div>
+
           <MediaUploader
-            label="Hero Static Poster Fallback (and Reduced Motion Image)"
-            currentUrl={hero.posterUrl}
-            onUrlChange={(url) => updateSection("hero", { posterUrl: url })}
+            label="Hero Cinematic Visual / Poster Image"
+            currentUrl={hero.cinematicImageUrl || hero.posterUrl}
+            onUrlChange={(url) => updateSection("hero", { cinematicImageUrl: url, posterUrl: url })}
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
