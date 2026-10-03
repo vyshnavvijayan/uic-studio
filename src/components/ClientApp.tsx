@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { SectionRenderer } from "@/components/SectionRenderer";
 import { Footer } from "@/components/Footer";
 import { InquiryModal } from "@/components/InquiryModal";
+import { AmbientBackgroundShapes } from "@/components/AmbientBackgroundShapes";
 import { getPublishedContent } from "@/lib/content-service";
 
 interface ClientAppProps {
@@ -40,7 +41,9 @@ export const ClientApp: React.FC<ClientAppProps> = ({ initialContent }) => {
   }, [initialContent.revision]);
 
   return (
-    <div className="min-h-screen bg-[#080809] text-[#f5f5f7] flex flex-col selection:bg-[#c6f36b] selection:text-[#080809]">
+    <div className="relative min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col selection:bg-[#c6f36b] selection:text-[#080809] transition-colors duration-300">
+      <AmbientBackgroundShapes />
+
       <Header
         brand={content.brand}
         onOpenInquiry={() => setInquiryModalOpen(true)}

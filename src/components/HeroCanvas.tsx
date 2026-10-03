@@ -281,7 +281,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
     <section
       id="hero"
       ref={containerRef}
-      className="relative w-full bg-[#080809]"
+      className="relative w-full bg-[#080809] text-[#f5f5f7] dark"
       style={{ height: reducedMotion ? "100vh" : "260vh" }}
     >
       {/* Sticky Viewport Container */}
@@ -300,8 +300,8 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({
           />
         )}
 
-        {/* Ambient Top & Bottom Vignettes */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#080809] to-transparent z-10 opacity-70" />
+        {/* Ambient Top & Bottom Vignettes: Permanently deep dark cinematic theater */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#080809]/90 to-transparent z-10 opacity-70" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#080809] via-[#080809]/80 to-transparent z-10" />
 
         {/* CENTER CONTENT: Dynamic Editorial Headlines */}

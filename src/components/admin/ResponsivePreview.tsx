@@ -5,6 +5,7 @@ import { SiteContent } from "@/types/content";
 import { Header } from "@/components/Header";
 import { SectionRenderer } from "@/components/SectionRenderer";
 import { Footer } from "@/components/Footer";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Monitor, Tablet, Smartphone, ExternalLink, RotateCcw } from "lucide-react";
 
 interface ResponsivePreviewProps {
@@ -75,9 +76,12 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({ content })
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Direct Theme Switcher in Responsive Preview Controls */}
+          <ThemeToggle />
+
           <button
             onClick={() => setPreviewKey((prev) => prev + 1)}
-            className="p-1.5 rounded-lg text-[#90909c] hover:text-white bg-white/[0.04] border border-white/10"
+            className="p-1.5 rounded-lg text-[#90909c] hover:text-white bg-white/[0.04] border border-white/10 transition-colors"
             title="Reset preview position"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -87,7 +91,7 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({ content })
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-2.5 py-1.5 rounded-lg text-xs font-mono text-[#90909c] hover:text-white bg-white/[0.04] border border-white/10 flex items-center gap-1"
+            className="px-2.5 py-1.5 rounded-lg text-xs font-mono text-[#90909c] hover:text-white bg-white/[0.04] border border-white/10 flex items-center gap-1 transition-colors"
             title="Open Live Public Site in new tab"
           >
             <span className="hidden sm:inline">Live Tab</span>
@@ -107,7 +111,7 @@ export const ResponsivePreview: React.FC<ResponsivePreviewProps> = ({ content })
           }`}
         >
           {/* Internal Scrollable Content */}
-          <div className="min-h-screen bg-[#080809] text-[#f5f5f7] relative isolate">
+          <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] relative isolate transition-colors duration-300">
             <Header brand={content.brand} isEmbeddedPreview={true} />
             <SectionRenderer content={content} />
             {content.sections.footer.enabled && (

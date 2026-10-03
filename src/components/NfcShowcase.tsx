@@ -336,10 +336,10 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
   };
 
   return (
-    <section id="nfc" className="relative py-28 sm:py-36 px-6 sm:px-8 border-t border-white/[0.06] bg-[#080809] overflow-hidden">
+    <section id="nfc" className="relative py-28 sm:py-36 px-6 sm:px-8 border-t border-zinc-200 dark:border-white/[0.06] bg-[var(--bg-primary)] transition-colors duration-300 overflow-hidden">
       {/* Ambient background glow tailored to active material */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] blur-[140px] rounded-full pointer-events-none transition-colors duration-700 opacity-25"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] blur-[140px] rounded-full pointer-events-none transition-colors duration-700 opacity-20 dark:opacity-25"
         style={{
           backgroundColor: activeTab === "creator" ? currentAccent : accentColor,
         }}
@@ -351,24 +351,24 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor }} />
-              <span className="text-xs font-mono uppercase tracking-widest text-[#90909c]">
+              <span className="text-xs font-mono uppercase tracking-widest text-zinc-500 dark:text-[#90909c]">
                 {content.label || "Tactile Engineering"}
               </span>
-              <span className="text-xs font-mono text-[#585863]">/ 03</span>
+              <span className="text-xs font-mono text-zinc-400 dark:text-[#585863]">/ 03</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-medium tracking-tight text-[#f5f5f7]">
+            <h2 className="text-3xl sm:text-5xl font-medium tracking-tight text-zinc-950 dark:text-[#f5f5f7]">
               {content.title}
             </h2>
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="inline-flex items-center p-1 rounded-2xl bg-[#121215] border border-white/[0.08]">
+          <div className="inline-flex items-center p-1 rounded-2xl bg-zinc-100 dark:bg-[#121215] border border-zinc-200 dark:border-white/[0.08]">
             <button
               onClick={() => setActiveTab("catalog")}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-all ${
                 activeTab === "catalog"
-                  ? "bg-[#c6f36b] text-[#080809] font-bold shadow-lg"
-                  : "text-[#90909c] hover:text-white"
+                  ? "bg-[#c6f36b] text-zinc-950 font-bold shadow-md"
+                  : "text-zinc-600 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white"
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -379,14 +379,14 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
               onClick={() => setActiveTab("creator")}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-all ${
                 activeTab === "creator"
-                  ? "bg-[#c6f36b] text-[#080809] font-bold shadow-lg"
-                  : "text-[#90909c] hover:text-white"
+                  ? "bg-[#c6f36b] text-zinc-950 font-bold shadow-md"
+                  : "text-zinc-600 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white"
               }`}
             >
               <Wand2 className="w-3.5 h-3.5" />
               <span>Custom Studio Creator</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                activeTab === "creator" ? "bg-black/20 text-[#080809]" : "bg-[#c6f36b]/15 text-[#c6f36b]"
+                activeTab === "creator" ? "bg-black/20 text-zinc-950" : "bg-[#c6f36b]/15 text-emerald-800 dark:text-[#c6f36b]"
               }`}>
                 Live Demo
               </span>
@@ -403,17 +403,17 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
             <div className="lg:col-span-7 flex flex-col items-center">
               {/* Interaction Quick Bar */}
               <div className="flex flex-wrap items-center justify-between w-full max-w-[480px] gap-3 mb-6">
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] text-[11px] font-mono text-[#90909c]">
-                  <Radio className="w-3.5 h-3.5 text-[#c6f36b] animate-pulse" />
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.08] text-[11px] font-mono text-zinc-600 dark:text-[#90909c] shadow-sm dark:shadow-none">
+                  <Radio className="w-3.5 h-3.5 text-emerald-600 dark:text-[#c6f36b] animate-pulse" />
                   <span>TAP CARD OR CLICK BELOW TO TEST</span>
                 </div>
 
                 {/* Flip Front/Back Toggle Button */}
                 <button
                   onClick={() => setIsFlipped(!isFlipped)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-mono text-[#f5f5f7] transition-all hover:scale-105 active:scale-95"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-white/[0.05] hover:bg-zinc-100 dark:hover:bg-white/[0.1] border border-zinc-200 dark:border-white/10 text-xs font-mono text-zinc-800 dark:text-[#f5f5f7] transition-all hover:scale-105 active:scale-95 shadow-sm dark:shadow-none"
                 >
-                  <RotateCw className="w-3.5 h-3.5 text-[#c6f36b]" />
+                  <RotateCw className="w-3.5 h-3.5 text-emerald-600 dark:text-[#c6f36b]" />
                   <span>{isFlipped ? "View Front Face" : "View Back Face"}</span>
                 </button>
               </div>
@@ -687,21 +687,21 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
 
               {/* SIMULATED SMARTPHONE NFC RECEIVER NOTIFICATION BANNER */}
               {tapSuccess && (
-                <div className="mt-8 w-full max-w-[480px] p-4 rounded-2xl bg-[#141418] border border-[#c6f36b]/60 shadow-[0_10px_35px_rgba(0,0,0,0.8)] flex items-center gap-4 animate-in fade-in slide-in-from-bottom-3 duration-300">
-                  <div className="w-11 h-11 rounded-xl bg-[#c6f36b]/15 border border-[#c6f36b]/30 flex items-center justify-center flex-shrink-0 text-[#c6f36b]">
+                <div className="mt-8 w-full max-w-[480px] p-4 rounded-2xl bg-white dark:bg-[#141418] border border-emerald-500/40 dark:border-[#c6f36b]/60 shadow-[0_10px_35px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.8)] flex items-center gap-4 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-[#c6f36b]/15 border border-emerald-300 dark:border-[#c6f36b]/30 flex items-center justify-center flex-shrink-0 text-emerald-600 dark:text-[#c6f36b]">
                     <Smartphone className="w-5 h-5 animate-pulse" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#c6f36b]" />
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-[#c6f36b] font-semibold">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#c6f36b]" />
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-700 dark:text-[#c6f36b] font-semibold">
                         NFC Tag Read (140ms handoff)
                       </span>
                     </div>
-                    <p className="text-xs font-medium text-white truncate mt-0.5">
+                    <p className="text-xs font-medium text-zinc-950 dark:text-white truncate mt-0.5">
                       {customName} &bull; {customCompany}
                     </p>
-                    <span className="text-[10px] font-mono text-[#90909c] block truncate">
+                    <span className="text-[10px] font-mono text-zinc-500 dark:text-[#90909c] block truncate">
                       Navigating to: {customHandle}
                     </span>
                   </div>
@@ -713,7 +713,7 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                 <button
                   onClick={handleCardTap}
                   disabled={isTapping}
-                  className="px-5 py-2.5 rounded-full bg-[#c6f36b] hover:bg-[#b5e656] text-[#080809] font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg active:scale-95"
+                  className="px-5 py-2.5 rounded-full bg-[#c6f36b] hover:bg-[#b5e656] text-zinc-950 font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-md active:scale-95"
                 >
                   <Radio className="w-3.5 h-3.5" />
                   <span>Simulate NFC Tap</span>
@@ -721,9 +721,9 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
 
                 <button
                   onClick={() => setIsFlipped(!isFlipped)}
-                  className="px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white font-mono text-xs uppercase tracking-wider transition-colors flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-full bg-white dark:bg-white/[0.04] hover:bg-zinc-100 dark:hover:bg-white/[0.08] border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-white font-mono text-xs uppercase tracking-wider transition-colors flex items-center gap-2 shadow-sm dark:shadow-none"
                 >
-                  <RotateCw className="w-3.5 h-3.5 text-[#c6f36b]" />
+                  <RotateCw className="w-3.5 h-3.5 text-emerald-600 dark:text-[#c6f36b]" />
                   <span>Flip to {isFlipped ? "Front" : "Back"}</span>
                 </button>
               </div>
@@ -731,24 +731,24 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
 
             {/* RIGHT: Live Workshop Studio Controls */}
             <div className="lg:col-span-5 flex flex-col gap-6">
-              <div className="p-7 sm:p-8 rounded-3xl bg-[#0d0d10] border border-white/[0.08] flex flex-col gap-6">
+              <div className="p-7 sm:p-8 rounded-3xl bg-white dark:bg-[#0d0d10] border border-zinc-200/90 dark:border-white/[0.08] shadow-sm dark:shadow-none flex flex-col gap-6">
                 {/* Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
+                <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-white/[0.06]">
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#c6f36b] block mb-1">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-700 dark:text-[#c6f36b] font-semibold block mb-1">
                       Guest Demo Studio
                     </span>
-                    <h3 className="text-xl sm:text-2xl font-medium text-white tracking-tight">
+                    <h3 className="text-xl sm:text-2xl font-medium text-zinc-950 dark:text-white tracking-tight">
                       Customize Your Physical Card
                     </h3>
                   </div>
 
-                  <Sliders className="w-5 h-5 text-[#90909c]" />
+                  <Sliders className="w-5 h-5 text-zinc-400 dark:text-[#90909c]" />
                 </div>
 
                 {/* Quick Presets */}
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#90909c] block mb-2">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-[#90909c] block mb-2 font-medium">
                     Quick Demo Presets:
                   </span>
                   <div className="grid grid-cols-2 gap-2">
@@ -756,12 +756,12 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                       <button
                         key={idx}
                         onClick={() => applyPreset(p)}
-                        className="px-3 py-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/20 text-left transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-white/[0.03] hover:bg-zinc-100 dark:hover:bg-white/[0.08] border border-zinc-200/80 dark:border-white/[0.06] hover:border-zinc-300 dark:hover:border-white/20 text-left transition-colors"
                       >
-                        <span className="text-xs font-medium text-white block truncate">
+                        <span className="text-xs font-medium text-zinc-900 dark:text-white block truncate">
                           {p.name.split(" ")[0]}
                         </span>
-                        <span className="text-[10px] font-mono text-[#90909c] block truncate">
+                        <span className="text-[10px] font-mono text-zinc-500 dark:text-[#90909c] block truncate">
                           {p.title.split(" ")[0]} &bull; {p.material}
                         </span>
                       </button>
@@ -771,9 +771,9 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
 
                 {/* Field 1: Cardholder Name */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] flex items-center justify-between">
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] flex items-center justify-between font-medium">
                     <span>Cardholder Name</span>
-                    <span className="text-[10px] text-[#585863]">{customName.length}/26</span>
+                    <span className="text-[10px] text-zinc-400 dark:text-[#585863]">{customName.length}/26</span>
                   </label>
                   <input
                     type="text"
@@ -781,14 +781,14 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                     value={customName}
                     onChange={(e) => setCustomName(e.target.value.toUpperCase())}
                     placeholder="E.G. ALEXANDER VANCE"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#141418] border border-white/10 focus:border-[#c6f36b] text-white text-sm font-mono uppercase outline-none transition-colors"
+                    className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-[#141418] border border-zinc-200 dark:border-white/10 focus:border-emerald-600 dark:focus:border-[#c6f36b] text-zinc-950 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/20 text-sm font-mono uppercase outline-none transition-colors"
                   />
                 </div>
 
                 {/* Field 2: Title / Designation & Organization */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c]">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] font-medium">
                       Title / Role
                     </label>
                     <input
@@ -797,12 +797,12 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                       value={customTitle}
                       onChange={(e) => setCustomTitle(e.target.value.toUpperCase())}
                       placeholder="E.G. MANAGING DIRECTOR"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#141418] border border-white/10 focus:border-[#c6f36b] text-white text-xs font-mono uppercase outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-[#141418] border border-zinc-200 dark:border-white/10 focus:border-emerald-600 dark:focus:border-[#c6f36b] text-zinc-950 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/20 text-xs font-mono uppercase outline-none transition-colors"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c]">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] font-medium">
                       Company / Monogram
                     </label>
                     <input
@@ -811,14 +811,14 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                       value={customCompany}
                       onChange={(e) => setCustomCompany(e.target.value.toUpperCase())}
                       placeholder="E.G. VANCE CAPITAL"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#141418] border border-white/10 focus:border-[#c6f36b] text-white text-xs font-mono uppercase outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-[#141418] border border-zinc-200 dark:border-white/10 focus:border-emerald-600 dark:focus:border-[#c6f36b] text-zinc-950 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/20 text-xs font-mono uppercase outline-none transition-colors"
                     />
                   </div>
                 </div>
 
                 {/* Field 3: Digital Destination URL / Handle */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c]">
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] font-medium">
                     NFC Transferred Link / vCard
                   </label>
                   <input
@@ -826,23 +826,23 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                     value={customHandle}
                     onChange={(e) => setCustomHandle(e.target.value)}
                     placeholder="uic.studio/@yourname"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#141418] border border-white/10 focus:border-[#c6f36b] text-white text-xs font-mono outline-none transition-colors"
+                    className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-[#141418] border border-zinc-200 dark:border-white/10 focus:border-emerald-600 dark:focus:border-[#c6f36b] text-zinc-950 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/20 text-xs font-mono outline-none transition-colors"
                   />
                 </div>
 
                 {/* COLOR & MATERIAL MODE TOGGLE */}
-                <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
+                <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100 dark:border-white/[0.06]">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c]">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] font-medium">
                       Finish & Palette Mode
                     </label>
-                    <div className="inline-flex rounded-lg bg-white/[0.04] p-0.5 border border-white/10">
+                    <div className="inline-flex rounded-lg bg-zinc-100 dark:bg-white/[0.04] p-0.5 border border-zinc-200 dark:border-white/10">
                       <button
                         onClick={() => setColorMode("alloy")}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-mono uppercase transition-colors ${
                           colorMode === "alloy"
-                            ? "bg-[#c6f36b] text-[#080809] font-bold"
-                            : "text-[#90909c] hover:text-white"
+                            ? "bg-[#c6f36b] text-zinc-950 font-bold shadow-sm"
+                            : "text-zinc-600 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white"
                         }`}
                       >
                         Aerospace Alloys
@@ -851,8 +851,8 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                         onClick={() => setColorMode("custom")}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-mono uppercase transition-colors flex items-center gap-1 ${
                           colorMode === "custom"
-                            ? "bg-[#c6f36b] text-[#080809] font-bold"
-                            : "text-[#90909c] hover:text-white"
+                            ? "bg-[#c6f36b] text-zinc-950 font-bold shadow-sm"
+                            : "text-zinc-600 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white"
                         }`}
                       >
                         <Palette className="w-3 h-3" />
@@ -873,20 +873,20 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                             onClick={() => setCustomMaterial(matKey)}
                             className={`p-2.5 rounded-xl text-left transition-all border flex items-center justify-between ${
                               isSelected
-                                ? "bg-white/[0.08] border-[#c6f36b] shadow-md"
-                                : "bg-[#141418] border-white/[0.06] hover:border-white/20"
+                                ? "bg-emerald-50 dark:bg-white/[0.08] border-emerald-600 dark:border-[#c6f36b] shadow-sm"
+                                : "bg-zinc-50 dark:bg-[#141418] border-zinc-200/80 dark:border-white/[0.06] hover:border-zinc-300 dark:hover:border-white/20"
                             }`}
                           >
                             <div className="min-w-0">
-                              <span className="text-xs font-medium text-white block truncate">
+                              <span className="text-xs font-medium text-zinc-900 dark:text-white block truncate">
                                 {mat.name}
                               </span>
-                              <span className="text-[10px] font-mono text-[#90909c] block truncate">
+                              <span className="text-[10px] font-mono text-zinc-500 dark:text-[#90909c] block truncate">
                                 {mat.weight} &bull; {mat.category.split(" ")[0]}
                               </span>
                             </div>
                             <span
-                              className="w-3 h-3 rounded-full flex-shrink-0 ml-2 border border-white/20"
+                              className="w-3 h-3 rounded-full flex-shrink-0 ml-2 border border-black/10 dark:border-white/20"
                               style={{ backgroundColor: mat.accent }}
                             />
                           </button>
@@ -895,10 +895,10 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                     </div>
                   ) : (
                     /* Mode 2: Custom Color Creator & Curated Palette */
-                    <div className="flex flex-col gap-3 mt-1 p-3.5 rounded-2xl bg-[#141418] border border-white/10">
+                    <div className="flex flex-col gap-3 mt-1 p-3.5 rounded-2xl bg-zinc-50 dark:bg-[#141418] border border-zinc-200 dark:border-white/10">
                       {/* Curated Luxury Swatches */}
                       <div>
-                        <span className="text-[10px] font-mono uppercase text-[#90909c] block mb-2">
+                        <span className="text-[10px] font-mono uppercase text-zinc-600 dark:text-[#90909c] block mb-2 font-medium">
                           Select Luxury Palette:
                         </span>
                         <div className="grid grid-cols-4 gap-1.5">
@@ -910,7 +910,7 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                                 setCustomSecondaryColor(pal.secondary);
                                 setCustomAccentColor(pal.accent);
                               }}
-                              className="p-1.5 rounded-lg border border-white/10 hover:border-white/30 flex flex-col items-center gap-1 transition-colors group"
+                              className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/10 hover:border-zinc-400 dark:hover:border-white/30 bg-white dark:bg-transparent flex flex-col items-center gap-1 transition-colors group shadow-2xs"
                               title={pal.name}
                             >
                               <div
@@ -919,7 +919,7 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                                   background: `linear-gradient(135deg, ${pal.primary}, ${pal.secondary})`,
                                 }}
                               />
-                              <span className="text-[9px] font-mono text-[#90909c] truncate max-w-full">
+                              <span className="text-[9px] font-mono text-zinc-600 dark:text-[#90909c] truncate max-w-full">
                                 {pal.name.split(" ")[0]}
                               </span>
                             </button>
@@ -928,47 +928,47 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                       </div>
 
                       {/* Precise Color Pickers */}
-                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/[0.06]">
+                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-200/80 dark:border-white/[0.06]">
                         <div className="flex flex-col gap-1">
-                          <label className="text-[10px] font-mono text-[#90909c]">Primary</label>
-                          <div className="flex items-center gap-1.5 bg-[#0a0a0c] p-1 rounded-lg border border-white/10">
+                          <label className="text-[10px] font-mono text-zinc-600 dark:text-[#90909c] font-medium">Primary</label>
+                          <div className="flex items-center gap-1.5 bg-white dark:bg-[#0a0a0c] p-1 rounded-lg border border-zinc-200 dark:border-white/10 shadow-2xs">
                             <input
                               type="color"
                               value={customPrimaryColor}
                               onChange={(e) => setCustomPrimaryColor(e.target.value)}
                               className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent"
                             />
-                            <span className="text-[10px] font-mono text-white truncate">
+                            <span className="text-[10px] font-mono text-zinc-900 dark:text-white truncate">
                               {customPrimaryColor}
                             </span>
                           </div>
                         </div>
 
                         <div className="flex flex-col gap-1">
-                          <label className="text-[10px] font-mono text-[#90909c]">Secondary</label>
-                          <div className="flex items-center gap-1.5 bg-[#0a0a0c] p-1 rounded-lg border border-white/10">
+                          <label className="text-[10px] font-mono text-zinc-600 dark:text-[#90909c] font-medium">Secondary</label>
+                          <div className="flex items-center gap-1.5 bg-white dark:bg-[#0a0a0c] p-1 rounded-lg border border-zinc-200 dark:border-white/10 shadow-2xs">
                             <input
                               type="color"
                               value={customSecondaryColor}
                               onChange={(e) => setCustomSecondaryColor(e.target.value)}
                               className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent"
                             />
-                            <span className="text-[10px] font-mono text-white truncate">
+                            <span className="text-[10px] font-mono text-zinc-900 dark:text-white truncate">
                               {customSecondaryColor}
                             </span>
                           </div>
                         </div>
 
                         <div className="flex flex-col gap-1">
-                          <label className="text-[10px] font-mono text-[#90909c]">Accent</label>
-                          <div className="flex items-center gap-1.5 bg-[#0a0a0c] p-1 rounded-lg border border-white/10">
+                          <label className="text-[10px] font-mono text-zinc-600 dark:text-[#90909c] font-medium">Accent</label>
+                          <div className="flex items-center gap-1.5 bg-white dark:bg-[#0a0a0c] p-1 rounded-lg border border-zinc-200 dark:border-white/10 shadow-2xs">
                             <input
                               type="color"
                               value={customAccentColor}
                               onChange={(e) => setCustomAccentColor(e.target.value)}
                               className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent"
                             />
-                            <span className="text-[10px] font-mono text-white truncate">
+                            <span className="text-[10px] font-mono text-zinc-900 dark:text-white truncate">
                               {customAccentColor}
                             </span>
                           </div>
@@ -979,10 +979,10 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                 </div>
 
                 {/* CARD SURFACE PATTERN */}
-                <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] flex items-center justify-between">
+                <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100 dark:border-white/[0.06]">
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] flex items-center justify-between font-medium">
                     <span>Card Surface Texture Pattern</span>
-                    <span className="text-[10px] text-[#c6f36b] capitalize">{customPattern}</span>
+                    <span className="text-[10px] text-emerald-700 dark:text-[#c6f36b] capitalize font-semibold">{customPattern}</span>
                   </label>
                   <div className="grid grid-cols-5 gap-1.5">
                     {[
@@ -997,11 +997,11 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                         onClick={() => setCustomPattern(pat.id as PatternType)}
                         className={`p-1.5 rounded-xl text-center text-xs font-mono transition-all border ${
                           customPattern === pat.id
-                            ? "bg-white/[0.1] border-[#c6f36b] text-white font-bold"
-                            : "bg-[#141418] border-white/[0.06] text-[#90909c] hover:text-white"
+                            ? "bg-emerald-50 dark:bg-white/[0.1] border-emerald-600 dark:border-[#c6f36b] text-zinc-950 dark:text-white font-bold shadow-sm"
+                            : "bg-zinc-50 dark:bg-[#141418] border-zinc-200/80 dark:border-white/[0.06] text-zinc-600 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white"
                         }`}
                       >
-                        <Grid className="w-3.5 h-3.5 mx-auto mb-1 text-[#c6f36b]" />
+                        <Grid className="w-3.5 h-3.5 mx-auto mb-1 text-emerald-600 dark:text-[#c6f36b]" />
                         <span className="text-[9px] block truncate">{pat.label}</span>
                       </button>
                     ))}
@@ -1009,24 +1009,24 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                 </div>
 
                 {/* IMAGE & LOGO UPLOADS */}
-                <div className="flex flex-col gap-3 pt-2 border-t border-white/[0.06]">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] flex items-center justify-between">
+                <div className="flex flex-col gap-3 pt-2 border-t border-zinc-100 dark:border-white/[0.06]">
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] flex items-center justify-between font-medium">
                     <span>Upload Custom Artwork & Brand Logo</span>
-                    <span className="text-[10px] text-[#585863]">PNG / JPG / WEBP</span>
+                    <span className="text-[10px] text-zinc-400 dark:text-[#585863]">PNG / JPG / WEBP</span>
                   </label>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {/* Background Artwork Upload */}
-                    <div className="p-3 rounded-2xl bg-[#141418] border border-white/10 flex flex-col gap-2">
+                    <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-[#141418] border border-zinc-200/80 dark:border-white/10 flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono text-white flex items-center gap-1.5">
-                          <ImageIcon className="w-3.5 h-3.5 text-[#c6f36b]" />
+                        <span className="text-xs font-mono text-zinc-900 dark:text-white flex items-center gap-1.5 font-medium">
+                          <ImageIcon className="w-3.5 h-3.5 text-emerald-600 dark:text-[#c6f36b]" />
                           <span>Card Artwork</span>
                         </span>
                         {customBgImage && (
                           <button
                             onClick={() => setCustomBgImage(null)}
-                            className="p-1 rounded hover:bg-white/10 text-red-400"
+                            className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-white/10 text-red-500"
                             title="Remove Background Image"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1044,26 +1044,26 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
 
                       {customBgImage ? (
                         <div className="flex flex-col gap-1.5">
-                          <span className="text-[10px] font-mono text-[#c6f36b]">
+                          <span className="text-[10px] font-mono text-emerald-700 dark:text-[#c6f36b] font-medium">
                             &check; Custom Artwork Loaded
                           </span>
                           <div className="flex items-center gap-2">
-                            <span className="text-[9px] font-mono text-[#90909c]">Opacity</span>
+                            <span className="text-[9px] font-mono text-zinc-500 dark:text-[#90909c]">Opacity</span>
                             <input
                               type="range"
                               min={20}
                               max={100}
                               value={bgImageOpacity}
                               onChange={(e) => setBgImageOpacity(Number(e.target.value))}
-                              className="w-full h-1 bg-white/20 rounded accent-[#c6f36b]"
+                              className="w-full h-1 bg-zinc-200 dark:bg-white/20 rounded accent-emerald-600 dark:accent-[#c6f36b]"
                             />
-                            <span className="text-[9px] font-mono text-white">{bgImageOpacity}%</span>
+                            <span className="text-[9px] font-mono text-zinc-900 dark:text-white">{bgImageOpacity}%</span>
                           </div>
                         </div>
                       ) : (
                         <button
                           onClick={() => bgFileInputRef.current?.click()}
-                          className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[11px] font-mono text-[#90909c] hover:text-white transition-colors flex items-center justify-center gap-1.5"
+                          className="w-full py-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-zinc-100 dark:hover:bg-white/[0.08] border border-zinc-200 dark:border-white/10 text-[11px] font-mono text-zinc-600 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
                         >
                           <Upload className="w-3 h-3" />
                           <span>Upload Background</span>
@@ -1072,16 +1072,16 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                     </div>
 
                     {/* Brand Logo Upload */}
-                    <div className="p-3 rounded-2xl bg-[#141418] border border-white/10 flex flex-col gap-2">
+                    <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-[#141418] border border-zinc-200/80 dark:border-white/10 flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono text-white flex items-center gap-1.5">
-                          <ShieldCheck className="w-3.5 h-3.5 text-[#c6f36b]" />
+                        <span className="text-xs font-mono text-zinc-900 dark:text-white flex items-center gap-1.5 font-medium">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#c6f36b]" />
                           <span>Brand Logo</span>
                         </span>
                         {customLogo && (
                           <button
                             onClick={() => setCustomLogo(null)}
-                            className="p-1 rounded hover:bg-white/10 text-red-400"
+                            className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-white/10 text-red-500"
                             title="Remove Logo"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1099,12 +1099,12 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
 
                       {customLogo ? (
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono text-[#c6f36b]">
+                          <span className="text-[10px] font-mono text-emerald-700 dark:text-[#c6f36b] font-medium">
                             &check; Logo Displayed on Card
                           </span>
                           <button
                             onClick={() => logoFileInputRef.current?.click()}
-                            className="text-[10px] font-mono text-[#90909c] underline hover:text-white"
+                            className="text-[10px] font-mono text-zinc-500 dark:text-[#90909c] underline hover:text-zinc-950 dark:hover:text-white"
                           >
                             Replace
                           </button>
@@ -1112,7 +1112,7 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                       ) : (
                         <button
                           onClick={() => logoFileInputRef.current?.click()}
-                          className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[11px] font-mono text-[#90909c] hover:text-white transition-colors flex items-center justify-center gap-1.5"
+                          className="w-full py-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-zinc-100 dark:hover:bg-white/[0.08] border border-zinc-200 dark:border-white/10 text-[11px] font-mono text-zinc-600 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
                         >
                           <Upload className="w-3 h-3" />
                           <span>Upload Logo / Crest</span>
@@ -1123,10 +1123,10 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                 </div>
 
                 {/* Laser Foil Typography Selection */}
-                <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] flex items-center justify-between">
+                <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100 dark:border-white/[0.06]">
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] flex items-center justify-between font-medium">
                     <span>Laser Engraving Foil Finish</span>
-                    <span className="text-[10px] text-[#c6f36b] font-medium">
+                    <span className="text-[10px] text-emerald-700 dark:text-[#c6f36b] font-semibold">
                       {activeFoilConfig.label}
                     </span>
                   </label>
@@ -1140,8 +1140,8 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                           onClick={() => setCustomFoil(fKey)}
                           className={`p-2 rounded-xl text-center text-xs font-mono transition-all border ${
                             isSelected
-                              ? "bg-white/[0.1] border-[#c6f36b] text-white font-bold"
-                              : "bg-[#141418] border-white/[0.06] text-[#90909c] hover:text-white"
+                              ? "bg-emerald-50 dark:bg-white/[0.1] border-emerald-600 dark:border-[#c6f36b] text-zinc-950 dark:text-white font-bold shadow-sm"
+                              : "bg-zinc-50 dark:bg-[#141418] border-zinc-200/80 dark:border-white/[0.06] text-zinc-600 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white"
                           }`}
                         >
                           <span
@@ -1156,8 +1156,8 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                 </div>
 
                 {/* Microchip Hardware Finish */}
-                <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c]">
+                <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100 dark:border-white/[0.06]">
+                  <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] font-medium">
                     Hardware Microchip Plating
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -1171,11 +1171,11 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                         onClick={() => setCustomChip(ch.id as ChipType)}
                         className={`p-2 rounded-xl text-center text-xs font-mono transition-all border ${
                           customChip === ch.id
-                            ? "bg-white/[0.1] border-[#c6f36b] text-white font-bold"
-                            : "bg-[#141418] border-white/[0.06] text-[#90909c] hover:text-white"
+                            ? "bg-emerald-50 dark:bg-white/[0.1] border-emerald-600 dark:border-[#c6f36b] text-zinc-950 dark:text-white font-bold shadow-sm"
+                            : "bg-zinc-50 dark:bg-[#141418] border-zinc-200/80 dark:border-white/[0.06] text-zinc-600 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white"
                         }`}
                       >
-                        <Cpu className="w-3.5 h-3.5 mx-auto mb-1 text-[#c6f36b]" />
+                        <Cpu className="w-3.5 h-3.5 mx-auto mb-1 text-emerald-600 dark:text-[#c6f36b]" />
                         <span className="text-[10px]">{ch.label}</span>
                       </button>
                     ))}
@@ -1183,15 +1183,15 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                 </div>
 
                 {/* Final Blueprint Commission CTA */}
-                <div className="pt-4 border-t border-white/[0.08]">
+                <div className="pt-4 border-t border-zinc-100 dark:border-white/[0.08]">
                   <button
                     onClick={onOpenInquiry}
-                    className="w-full rounded-2xl bg-[#c6f36b] hover:bg-[#b5e656] text-[#080809] py-3.5 text-xs font-bold font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-[#c6f36b]/20"
+                    className="w-full rounded-2xl bg-[#c6f36b] hover:bg-[#b5e656] text-zinc-950 py-3.5 text-xs font-bold font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-98"
                   >
                     <span>Commission This Exact NFC Blueprint</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
-                  <span className="block text-center text-[10px] font-mono text-[#585863] mt-2">
+                  <span className="block text-center text-[10px] font-mono text-zinc-500 dark:text-[#585863] mt-2">
                     Includes precision CNC laser-milling &bull; NTAG 424 encryption &bull; Global air courier
                   </span>
                 </div>
@@ -1207,15 +1207,15 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
             <div className="lg:col-span-7 flex flex-col items-center">
               {/* Interactive Signal Hint */}
               <div className="flex items-center gap-3 mb-8">
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] text-[11px] font-mono text-[#90909c]">
-                  <Radio className="w-3.5 h-3.5 text-[#c6f36b] animate-pulse" />
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.08] text-[11px] font-mono text-zinc-600 dark:text-[#90909c] shadow-sm dark:shadow-none">
+                  <Radio className="w-3.5 h-3.5 text-emerald-600 dark:text-[#c6f36b] animate-pulse" />
                   <span>TAP CARD TO SIMULATE NFC TRANSMISSION</span>
                 </div>
 
                 {/* Pause/Play Card Cycling */}
                 <button
                   onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-                  className="p-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-[#90909c] hover:text-white transition-colors"
+                  className="p-1.5 rounded-full bg-white dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.08] text-zinc-500 dark:text-[#90909c] hover:text-zinc-950 dark:hover:text-white transition-colors shadow-sm dark:shadow-none"
                   title={isAutoPlaying ? "Pause auto-cycling" : "Resume auto-cycling"}
                   aria-label="Toggle card cycle"
                 >
@@ -1346,42 +1346,42 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
 
             {/* RIGHT: Material Inspector & Customizer */}
             <div className="lg:col-span-5 flex flex-col gap-6">
-              <div className="p-8 rounded-2xl bg-[#0d0d10] border border-white/[0.06] flex flex-col gap-6">
+              <div className="p-8 rounded-2xl bg-white dark:bg-[#0d0d10] border border-zinc-200/90 dark:border-white/[0.06] shadow-sm dark:shadow-none flex flex-col gap-6">
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#c6f36b] block mb-2">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-700 dark:text-[#c6f36b] font-semibold block mb-2">
                     Active Material Specification
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-medium text-white tracking-tight">
+                  <h3 className="text-2xl sm:text-3xl font-medium text-zinc-950 dark:text-white tracking-tight">
                     {activeCatalogCard.name}
                   </h3>
-                  <p className="mt-3 text-sm text-[#90909c] leading-relaxed font-light">
+                  <p className="mt-3 text-sm text-zinc-600 dark:text-[#90909c] leading-relaxed font-light">
                     {activeCatalogCard.description}
                   </p>
                 </div>
 
                 {/* Technical Attributes */}
-                <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/[0.06] text-xs font-mono">
+                <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-100 dark:border-white/[0.06] text-xs font-mono">
                   <div>
-                    <span className="text-[#585863] block mb-1">CORE COMPOSITE</span>
-                    <span className="text-white font-medium">{activeCatalogCard.material}</span>
+                    <span className="text-zinc-500 dark:text-[#585863] block mb-1">CORE COMPOSITE</span>
+                    <span className="text-zinc-900 dark:text-white font-medium">{activeCatalogCard.material}</span>
                   </div>
                   <div>
-                    <span className="text-[#585863] block mb-1">SURFACE TREATMENT</span>
-                    <span className="text-white font-medium">{activeCatalogCard.surfaceFinish}</span>
+                    <span className="text-zinc-500 dark:text-[#585863] block mb-1">SURFACE TREATMENT</span>
+                    <span className="text-zinc-900 dark:text-white font-medium">{activeCatalogCard.surfaceFinish}</span>
                   </div>
                   <div>
-                    <span className="text-[#585863] block mb-1">TARE WEIGHT</span>
-                    <span className="text-white font-medium">{activeCatalogCard.weight}</span>
+                    <span className="text-zinc-500 dark:text-[#585863] block mb-1">TARE WEIGHT</span>
+                    <span className="text-zinc-900 dark:text-white font-medium">{activeCatalogCard.weight}</span>
                   </div>
                   <div>
-                    <span className="text-[#585863] block mb-1">DATA STANDARD</span>
-                    <span className="text-[#c6f36b] font-medium">NFC Forum Type 4</span>
+                    <span className="text-zinc-500 dark:text-[#585863] block mb-1">DATA STANDARD</span>
+                    <span className="text-emerald-700 dark:text-[#c6f36b] font-medium">NFC Forum Type 4</span>
                   </div>
                 </div>
 
                 {/* Material Switcher Tabs */}
-                <div className="pt-6 border-t border-white/[0.06]">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#90909c] block mb-3">
+                <div className="pt-6 border-t border-zinc-100 dark:border-white/[0.06]">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-600 dark:text-[#90909c] block mb-3 font-medium">
                     Select Alloy / Finish:
                   </span>
                   <div className="grid grid-cols-2 gap-2">
@@ -1394,8 +1394,8 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                         }}
                         className={`px-3 py-2 rounded-xl text-left text-xs font-mono transition-all flex items-center justify-between border ${
                           catalogIndex === idx
-                            ? "bg-white/[0.08] border-[#c6f36b] text-white"
-                            : "bg-white/[0.02] border-white/[0.06] text-[#90909c] hover:border-white/20 hover:text-white"
+                            ? "bg-emerald-50 dark:bg-white/[0.08] border-emerald-600 dark:border-[#c6f36b] text-zinc-950 dark:text-white font-medium shadow-sm"
+                            : "bg-zinc-50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/[0.06] text-zinc-600 dark:text-[#90909c] hover:border-zinc-300 dark:hover:border-white/20 hover:text-zinc-950 dark:hover:text-white"
                         }`}
                       >
                         <span className="truncate">{c.name.split(" ")[0]}</span>
@@ -1412,7 +1412,7 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
                 <div className="pt-2 flex flex-col gap-2.5">
                   <button
                     onClick={() => setActiveTab("creator")}
-                    className="w-full rounded-full bg-[#c6f36b] text-[#080809] hover:bg-[#b5e656] py-3 text-xs font-bold font-mono uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                    className="w-full rounded-full bg-[#c6f36b] text-zinc-950 hover:bg-[#b5e656] py-3 text-xs font-bold font-mono uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-md"
                   >
                     <Wand2 className="w-4 h-4" />
                     <span>Open Live Card Customizer</span>
@@ -1420,9 +1420,9 @@ export const NfcShowcase: React.FC<NfcShowcaseProps> = ({
 
                   <button
                     onClick={onOpenInquiry}
-                    className="w-full rounded-full bg-white/[0.04] text-white hover:bg-white/[0.08] border border-white/10 py-3 text-xs font-mono uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                    className="w-full rounded-full bg-zinc-100 dark:bg-white/[0.04] text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-white/[0.08] border border-zinc-200 dark:border-white/10 py-3 text-xs font-mono uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm dark:shadow-none"
                   >
-                    <Smartphone className="w-4 h-4 text-[#c6f36b]" />
+                    <Smartphone className="w-4 h-4 text-emerald-600 dark:text-[#c6f36b]" />
                     <span>Inquire Catalog Edition</span>
                   </button>
                 </div>
