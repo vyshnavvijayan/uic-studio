@@ -48,30 +48,52 @@ function AdminEditorContent() {
 
   const supabaseReady = isSupabaseConfigured();
 
-  // Authentication check
+  // Authentication check with timeout safeguard
   useEffect(() => {
+    // If sandbox mode is explicitly requested, bypass auth gate immediately
+    if (isExplicitSandbox) {
+      setAuthChecking(false);
+      return;
+    }
+
     const supabase = getSupabaseClient();
     if (!supabase || !supabaseReady) {
       setAuthChecking(false);
       return;
     }
 
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
-        if (!isExplicitSandbox) {
-          router.push("/admin/login");
-          return;
-        }
-      } else {
-        const isAdmin = await verifyUserIsAdmin(user.id);
-        if (!isAdmin && !isExplicitSandbox) {
-          router.push("/admin/login");
-          return;
-        }
-        setUserEmail(user.email || "Admin");
-      }
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
       setAuthChecking(false);
+      router.push("/admin/login");
+    }, 4000);
+
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (timedOut) return;
+      clearTimeout(timer);
+
+      if (!user) {
+        router.push("/admin/login");
+        return;
+      }
+
+      const isAdmin = await verifyUserIsAdmin(user.id);
+      if (!isAdmin) {
+        router.push("/admin/login");
+        return;
+      }
+
+      setUserEmail(user.email || "Admin");
+      setAuthChecking(false);
+    }).catch(() => {
+      if (timedOut) return;
+      clearTimeout(timer);
+      setAuthChecking(false);
+      router.push("/admin/login");
     });
+
+    return () => clearTimeout(timer);
   }, [router, supabaseReady, isExplicitSandbox]);
 
   // Load draft content on initial mount
@@ -110,8 +132,11 @@ function AdminEditorContent() {
 
     if (res.success) {
       setIsDirty(false);
-      setStatusNotice({ type: "success", text: "Draft changes saved successfully." });
-      setTimeout(() => setStatusNotice(null), 3000);
+      setStatusNotice({
+        type: "success",
+        text: res.notice || "Draft changes saved successfully.",
+      });
+      setTimeout(() => setStatusNotice(null), 3500);
     } else {
       setStatusNotice({ type: "error", text: res.error || "Failed to save draft." });
     }
@@ -137,7 +162,7 @@ function AdminEditorContent() {
       }));
       setStatusNotice({
         type: "success",
-        text: `Published successfully! Live Revision #${res.revision || "Latest"}.`,
+        text: res.notice || `Published successfully! Live Revision #${res.revision || "Latest"}.`,
       });
 
       // Celebration Confetti
@@ -239,17 +264,20 @@ function AdminEditorContent() {
   return (
     <div className="min-h-screen bg-[#080809] text-[#f5f5f7] flex flex-col selection:bg-[#c6f36b] selection:text-[#080809]">
       {/* Top Banner if in Sandbox Mode */}
-      {!supabaseReady && (
+      {(isExplicitSandbox || !supabaseReady) && (
         <div className="bg-amber-950/60 border-b border-amber-500/30 px-6 py-2 text-xs font-mono text-amber-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-amber-400 flex-shrink-0" />
             <span>
-              <strong>Preview Sandbox Mode:</strong> Supabase environment keys not detected. Real-time preview and browser drafts active.
+              <strong>Interactive Sandbox Mode:</strong> Real-time editor, local drafts, and responsive preview enabled without credentials.
             </span>
           </div>
-          <span className="text-[11px] text-amber-200/70 hidden md:inline">
-            Connect Supabase for persistent cloud database & multi-admin sync.
-          </span>
+          <Link
+            href="/admin/login"
+            className="text-[11px] font-mono text-white underline hover:text-[#c6f36b]"
+          >
+            Authenticate with Supabase Cloud &rarr;
+          </Link>
         </div>
       )}
 

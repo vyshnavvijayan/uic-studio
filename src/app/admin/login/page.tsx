@@ -5,34 +5,40 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 import { verifyUserIsAdmin } from "@/lib/content-service";
-import { Lock, Mail, ShieldAlert, ArrowLeft, KeyRound, Sparkles } from "lucide-react";
+import { Lock, Mail, ShieldAlert, ArrowLeft, KeyRound, Sparkles, UserPlus, LogIn, CheckCircle } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const supabaseReady = isSupabaseConfigured();
 
   // If already logged in and verified admin, navigate straight to CMS
   useEffect(() => {
     const supabase = getSupabaseClient();
     if (supabase) {
-      supabase.auth.getUser().then(async ({ data: { user } }) => {
-        if (user) {
-          const isAdmin = await verifyUserIsAdmin(user.id);
-          if (isAdmin) {
-            router.push("/admin");
+      supabase.auth
+        .getUser()
+        .then(async ({ data: { user } }) => {
+          if (user) {
+            const isAdmin = await verifyUserIsAdmin(user.id);
+            if (isAdmin) {
+              router.push("/admin");
+            }
           }
-        }
-      });
+        })
+        .catch(() => {});
     }
   }, [router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setSuccessMsg(null);
     setLoading(true);
 
     const supabase = getSupabaseClient();
@@ -43,34 +49,59 @@ export default function AdminLoginPage() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      if (authMode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
 
-      if (error) {
-        setErrorMsg(error.message);
-        setLoading(false);
-        return;
+        if (error) {
+          setErrorMsg(error.message);
+          setLoading(false);
+          return;
+        }
+
+        if (data.session) {
+          // Automatic session created (no email confirmation needed)
+          router.push("/admin");
+          return;
+        }
+
+        if (data.user) {
+          setSuccessMsg("Account created! Check your email inbox for the activation link, or sign in now.");
+          setAuthMode("signin");
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          setErrorMsg(error.message);
+          setLoading(false);
+          return;
+        }
+
+        if (!data.user) {
+          setErrorMsg("Failed to authenticate user.");
+          setLoading(false);
+          return;
+        }
+
+        // Check if user is an approved admin in site_admins table
+        const isAdmin = await verifyUserIsAdmin(data.user.id);
+        if (!isAdmin) {
+          await supabase.auth.signOut();
+          setErrorMsg(
+            "Access Denied: Your account is authenticated but not listed in the approved 'site_admins' table. Contact studio administration."
+          );
+          setLoading(false);
+          return;
+        }
+
+        router.push("/admin");
       }
-
-      if (!data.user) {
-        setErrorMsg("Failed to authenticate user.");
-        setLoading(false);
-        return;
-      }
-
-      // Check if user is an approved admin in site_admins table
-      const isAdmin = await verifyUserIsAdmin(data.user.id);
-      if (!isAdmin) {
-        // Enforce permissions in database: sign out unauthorized user immediately
-        await supabase.auth.signOut();
-        setErrorMsg("Access Denied: Your account is authenticated but not listed in the approved 'site_admins' table. Contact studio administration.");
-        setLoading(false);
-        return;
-      }
-
-      router.push("/admin");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "An unexpected authentication error occurred.";
       setErrorMsg(msg);
@@ -100,44 +131,61 @@ export default function AdminLoginPage() {
             UIC Studio CMS
           </h1>
           <p className="mt-2 text-xs font-mono text-[#90909c]">
-            Restricted Administrative Access
+            Section-Based Visual Website Editor &amp; Publisher
           </p>
         </div>
 
-        {/* Sandbox Notice if Supabase not configured */}
-        {!supabaseReady && (
-          <div className="mb-6 p-4 rounded-2xl bg-[#161619] border border-amber-500/30 text-amber-200/90 text-xs leading-relaxed flex flex-col gap-2">
-            <div className="flex items-center gap-2 font-semibold text-amber-400 font-mono uppercase tracking-wider text-[11px]">
-              <ShieldAlert className="w-4 h-4" />
-              <span>Supabase Not Configured</span>
-            </div>
-            <p>
-              Environment variables (<code className="text-white">NEXT_PUBLIC_SUPABASE_URL</code> and <code className="text-white">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>) are not yet set.
-            </p>
-            <div className="pt-2 border-t border-amber-500/20">
-              <Link
-                href="/admin?mode=sandbox"
-                className="inline-flex items-center gap-1.5 text-white underline font-semibold hover:text-[#c6f36b]"
-              >
-                <span>Enter Labelled Preview Sandbox Mode</span>
-                <Sparkles className="w-3.5 h-3.5" />
-              </Link>
-              <span className="block text-[11px] text-[#90909c] mt-1">
-                Allows testing all section editors, layout tools, and live responsive previews immediately.
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Login Form */}
+        {/* Login / Signup Card */}
         <div className="p-8 rounded-3xl bg-[#0d0d10] border border-white/[0.08] shadow-2xl">
+          {/* Mode Switcher Tabs */}
+          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06] mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode("signin");
+                setErrorMsg(null);
+              }}
+              className={`py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                authMode === "signin"
+                  ? "bg-[#c6f36b] text-[#080809] font-bold shadow"
+                  : "text-[#90909c] hover:text-white"
+              }`}
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Sign In</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode("signup");
+                setErrorMsg(null);
+              }}
+              className={`py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                authMode === "signup"
+                  ? "bg-[#c6f36b] text-[#080809] font-bold shadow"
+                  : "text-[#90909c] hover:text-white"
+              }`}
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Register</span>
+            </button>
+          </div>
+
           {errorMsg && (
             <div className="mb-6 p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-red-200 text-xs leading-relaxed font-mono">
               {errorMsg}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+          {successMsg && (
+            <div className="mb-6 p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 text-xs leading-relaxed font-mono flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-[#c6f36b] flex-shrink-0" />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
               <label className="text-[11px] font-mono uppercase tracking-wider text-[#90909c] block mb-2">
                 Administrator Email
@@ -178,29 +226,31 @@ export default function AdminLoginPage() {
               className="mt-2 w-full rounded-xl bg-[#c6f36b] disabled:opacity-40 disabled:cursor-not-allowed text-[#080809] hover:bg-[#b5e656] py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
-                <span className="font-mono">Authenticating...</span>
+                <span className="font-mono">Processing...</span>
               ) : (
-                <span>Authenticate Admin</span>
+                <span>{authMode === "signup" ? "Create Admin Account" : "Authenticate & Open CMS"}</span>
               )}
             </button>
           </form>
 
-          {/* Sandbox Direct Button */}
-          {!supabaseReady && (
-            <div className="mt-6 pt-6 border-t border-white/[0.08] text-center">
-              <Link
-                href="/admin?mode=sandbox"
-                className="w-full inline-block py-2.5 px-4 rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.02] text-xs font-mono text-[#90909c] hover:text-white transition-all"
-              >
-                Launch Sandbox Editor (No Auth Required)
-              </Link>
-            </div>
-          )}
+          {/* Sandbox Direct Button (Always accessible for testing/demo) */}
+          <div className="mt-6 pt-6 border-t border-white/[0.08] text-center">
+            <Link
+              href="/admin?mode=sandbox"
+              className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/10 hover:border-[#c6f36b]/40 bg-white/[0.02] hover:bg-[#c6f36b]/5 text-xs font-mono text-white transition-all group"
+            >
+              <span>Launch Sandbox Editor (No Auth Required)</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#c6f36b] group-hover:rotate-12 transition-transform" />
+            </Link>
+            <p className="text-[11px] text-[#585863] font-mono mt-1.5">
+              Instant access: edit all sections, toggle viewports, and test drafts in browser storage.
+            </p>
+          </div>
         </div>
 
         {/* Security Policy Reminder */}
         <div className="mt-8 text-center text-[11px] font-mono text-[#585863] leading-relaxed">
-          Public registration is strictly disabled. Administrative credentials must be approved in Supabase <code className="text-[#90909c]">site_admins</code> table.
+          Connected to Supabase Project: <code className="text-[#90909c]">nnvjdfjizpgqyxwlhgnu</code>
         </div>
       </div>
     </div>
